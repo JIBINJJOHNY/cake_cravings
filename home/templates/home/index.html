@@ -1,6 +1,20 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block content %}
-<h1 class="display-4 text-success">Cake Cravings</h1>
+<div class="container-fluid">
+    <!-- Home section -->
+    <div class="row home-section">
+        <div class="col-md-6 content" data-aos="zoom-out-right">
+            <h2 class="display-4">Delicious Cakes Crafted to Perfection</h2>
+            <p class="lead">Welcome to the world of exquisite cakes that tantalize your taste buds and elevate your
+                celebrations. At Cake Bliss, we craft delicious, handcrafted cakes that are perfect for every occasion.
+            </p>
+            <a href="{% url 'products:products' %}" class="btn btn-primary btn-lg">Order Now</a>
+        </div>
+        <div class="col-md-6 img" data-aos="zoom-out-left">
+            <img class="img-fluid shadow-effect" src="{% static 'image/cake_background.png' %}" alt="Delicious Cakes">
+        </div>
+    </div>
+</div>
 {% endblock %}
