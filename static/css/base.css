@@ -20,10 +20,20 @@ h2 {
 }
 
 
-
 /* Style the navigation bar */
 #navbar {
     background-color: rgb(38, 15, 38);
+}
+
+.navbar-toggler-icon {
+    background: url('/static/images/hamburger_menu.png') center center no-repeat;
+    background-size: cover;
+    width: 30px;
+    /* Adjust the width as needed */
+    height: 30px;
+    /* Adjust the height as needed */
+    border: none;
+    /* Remove the default border */
 }
 
 /* Style the logo */

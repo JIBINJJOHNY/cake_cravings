@@ -28,9 +28,6 @@
     {% endblock %}
 
     {% block extra_css %}
-    <style>
-        /* Your custom styles can go here */
-    </style>
     {% endblock %}
 
     {% block corejs %}
@@ -61,11 +58,14 @@
 <body>
     <header class="container-fluid fixed-top">
         <nav class="navbar navbar-expand-md" id="navbar">
-
             <!-- Brand -->
             <a class="navbar-brand" href="{% url 'home' %}" id="logo">
                 <img src="{% static 'images/logo.png' %}" alt="" width="100px">
             </a>
+            <!-- Navbar toggler for small screens -->
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <!-- Navbar links -->
             <div class="collapse navbar-collapse" id="collapsibleNavbar">
                 <ul class="navbar-nav">
@@ -74,7 +74,7 @@
                     </li>
                     <!-- dropdown -->
                     <li class="nav-item">
-                        <a class="nav-link" href="#">our menu</a>
+                        <a class="nav-link" href="#">Our Menu</a>
                     </li>
                     <!-- dropdown -->
                     <li class="nav-item">
@@ -87,11 +87,7 @@
                         <a class="nav-link" href="#">Contact</a>
                     </li>
                 </ul>
-            </div>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="collapsibleNavbar">
+                <!-- Move the form and user icons to the right -->
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
                         <form class="form-inline" method="GET" action="">
@@ -122,7 +118,6 @@
                     </li>
                 </ul>
             </div>
-
         </nav>
     </header>
 
