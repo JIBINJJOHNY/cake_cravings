@@ -5,7 +5,7 @@ body {
     background: url('/static/images/homepage_background.jpg') no-repeat center center fixed;
     background-size: cover;
     height: calc(100vh - 164px);
-    color: #ffffff;
+    color: rgb(38, 15, 38);
     font-family: 'Lato';
     margin: 0;
     /* Remove default body margin */
@@ -55,14 +55,15 @@ h2 {
 /* Style for the content column */
 .content {
     padding: 40px;
-
+    /* Add padding for spacing around the text */
 }
 
 /* Custom style for the Order Now button */
 .order-now-button {
     background-color: rgb(38, 15, 38);
     color: #fff;
-
+    /* Set text color to white or your preferred color */
+    /* Add any additional styles as needed */
 }
 
 @media (max-width: 768px) {
