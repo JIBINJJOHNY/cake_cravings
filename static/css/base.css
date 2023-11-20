@@ -1,81 +1,78 @@
-html {
-    height: 100%;
-}
+/* custom.css */
 
+/* Apply styles similar to your body */
 body {
     background: url('/static/images/homepage_background.jpg') no-repeat center center fixed;
     background-size: cover;
     height: calc(100vh - 164px);
-    color: #555;
+    color: #ffffff;
     font-family: 'Lato';
+    margin: 0;
+    /* Remove default body margin */
 }
 
-/* from Bulma */
-.icon {
-    align-items: center;
-    display: inline-flex;
-    justify-content: center;
-    height: 1.5rem;
-    width: 1.5rem;
+h2 {
+    font-family: "Great Vibes", cursive;
+    font-size: 60px;
+    color: #9b6e2f;
+    text-shadow: 1px 1px 1px black;
+    font-weight: bold;
 }
 
-.logo-font {
-    text-transform: uppercase;
+
+
+/* Style the navigation bar */
+#navbar {
+    background-color: rgb(38, 15, 38);
 }
 
-.main-logo-link {
-    width: fit-content;
+/* Style the logo */
+#logo img {
+    width: 100px;
+    height: auto;
 }
 
-.shop-now-button {
-    background: black;
+/* Style the search form in the navigation bar */
+.navbar-form {
+    margin-right: 20px;
+}
+
+/* Add styles for the user authentication and icons */
+.navbar-nav li {
+    margin-right: 10px;
+}
+
+.nav-link {
     color: white;
-    min-width: 260px;
 }
 
-.btn-black {
-    background: black;
-    color: white;
+/* Style for the home section */
+.home-section {
+    margin-top: 80px;
+    /* Adjust the margin based on your navbar height */
 }
 
-.shop-now-button:hover,
-.shop-now-button:active,
-.shop-now-button:focus,
-.btn-black:hover,
-.btn-black:active,
-.btn-black:focus {
-    background: #222;
-    color: white;
+/* Style for the content column */
+.content {
+    padding: 40px;
+
 }
 
-.text-black {
-    color: #000 !important;
+/* Custom style for the Order Now button */
+.order-now-button {
+    background-color: rgb(38, 15, 38);
+    color: #fff;
+
 }
 
-.border-black {
-    border: 1px solid black !important;
-}
-
-/* -------------------------------- Media Queries */
-
-/* Slightly larger container on xl screens */
-@media (min-width: 1200px) {
-    .container {
-        max-width: 80%;
-    }
-}
-
-/* fixed top navbar only on medium and up */
-@media (min-width: 992px) {
-    .fixed-top-desktop-only {
-        position: fixed;
-        top: 0;
-        right: 0;
-        left: 0;
-        z-index: 1030;
+@media (max-width: 768px) {
+    .home-section {
+        margin-top: 60px;
+        /* Adjust margin for smaller screens */
     }
 
-    .header-container {
-        padding-top: 164px;
+    .content {
+        padding: 20px;
+        /* Reduce padding for smaller screens */
     }
 }
