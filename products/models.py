@@ -95,6 +95,12 @@ class Tag(models.Model):
     def get_not_active_tags(cls):
         """Get not active tags"""
         return cls.objects.filter(is_active=False)
+from django.db import models
+from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
+from decimal import Decimal
+from django.utils import timezone
+
 class Discount(models.Model):
     percentage = models.PositiveIntegerField(help_text='Discount percentage')
     start_date = models.DateField(help_text='Start date of the discount')
@@ -104,7 +110,20 @@ class Discount(models.Model):
     def is_valid(self):
         today = timezone.now().date()
         return self.start_date <= today <= self.end_date and self.is_active
+
 class Product(models.Model):
+    SIZE_CHOICES = [
+        ('S', 'Small (18cm - 6 portions)'),
+        ('M', 'Medium (26cm - 12 portions)'),
+        ('L', 'Large (36cm - 25 portions)'),
+    ]
+
+    AVAILABILITY_CHOICES = [
+        ('out_of_stock', 'Out of Stock'),
+        ('upcoming', 'Upcoming'),
+        ('in_stock', 'In Stock'),
+    ]
+
     name = models.CharField(max_length=150)
     slug = models.SlugField(max_length=150, unique=True)
     description = models.TextField(max_length=500)
@@ -114,39 +133,33 @@ class Product(models.Model):
     is_active = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    availability_choices = [
-        ('out_of_stock', 'Out of Stock'),
-        ('upcoming', 'Upcoming'),
-        ('in_stock', 'In Stock'),
-    ]
-    availability = models.CharField(max_length=20, choices=availability_choices, default='in_stock')
-
-    size = models.CharField(max_length=5, choices=[
-        ('S', 'Small (18cm - 6 portions)'),
-        ('M', 'Medium (26cm - 12 portions)'),
-        ('L', 'Large (36cm - 25 portions)'),
-    ], default='S')
-
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-
-    discount = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
+    discount_price = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
+    availability = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES, default='in_stock')
+    size = models.CharField(max_length=5, choices=SIZE_CHOICES, default='S')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name, allow_unicode=True)
 
-        # Set price based on selected size
-        if self.size == 'S':
-            self.price = Decimal('30.0')
-        elif self.size == 'M':
-            self.price = Decimal('45.0')
-        elif self.size == 'L':
-            self.price = Decimal('80.0')
+        # Only adjust price based on size if the category is 'cakes'
+        if self.category.name.lower() == 'cakes':
+            if self.size == 'S':
+                self.price = Decimal('30.0')
+            elif self.size == 'M':
+                self.price = Decimal('45.0')
+            elif self.size == 'L':
+                self.price = Decimal('80.0')
+
+        # Check if a discount is applicable
+        if self.discount_price and self.discount_price.is_valid():
+            discount_amount = (self.discount_price.percentage / Decimal(100)) * self.price
+            self.price -= discount_amount
 
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
+
 class ProductImage(models.Model):
     product = models.ForeignKey(
         'Product',
@@ -197,12 +210,16 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.name}"
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        if self.default_image:
-            for image in self.product.images.all().exclude(id=self.id):
-                image.default_image = False
-                image.save()
+def save(self, *args, **kwargs):
+    if not self.slug:
+        self.slug = slugify(self.name, allow_unicode=True)
+
+    if self.default_image:
+        for image in self.product.images.all().exclude(id=self.id):
+            image.default_image = False
+            image.save()
+
+    super().save(*args, **kwargs)
 
     @property
     def image_url(self):

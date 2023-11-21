@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div id="product-cards">
+    <h1>Products</h1>
+    <div class="container">
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-3 py-3 py-md-0">
+                <div class="card">
+                    <!-- Make the entire card clickable and redirect to the product_detail page -->
+                    <a href="#">
+                        <div class="overlay">
+                            <!-- "Quick View" button -->
+                            <button type="button" class="btn btn-secondary quick-view-button" title="Quick View"
+                                data-product-id="{{ product.id }}" data-toggle="modal" data-target="#quickViewModal"
+                                onclick="handleButtonClick(event, 'quickView')">
+                                <i><img src="{% static 'image/views.png' %}" alt="" width="30px"></i>
+                            </button>
+                            <!-- "Add to Wishlist" button -->
+                            <button id="addToWishlistBtn" class="btn btn-secondary" title="Add to Wishlist"
+                                data-product-id="{{ product.id }}" onclick="addToWishlist(event, '{{ product.id }}')">
+                                <i><img src="{% static 'image/heart.png' %}" alt="add to wishlist icon"
+                                        width="30px"></i>
+                            </button>
+                            <!-- "Add to Cart" button -->
+                            <form method="POST" action="">
+                                {% csrf_token %}
+                                <input type="hidden" name="product_id" value="{{ product.id }}">
+                                <button type="button" class="btn btn-secondary" title="Add to Cart"
+                                    onclick="handleButtonClick(event, 'addToCart')">
+                                    <i><img src="{% static 'image/add.png' %}" alt="add to cart icon" width="30px"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <!-- Set a maximum height for the image -->
+                        <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                            style="max-height: 200px;">
+                    </a>
+                    <div class="card-body">
+                        <h3>{{ product.name }}</h3>
+                        <div class="star">
+                            <i class="bx bxs-star checked"></i>
+                            <i class="bx bxs-star checked"></i>
+                            <i class="bx bxs-star checked"></i>
+                            <i class="bx bxs-star"></i>
+                            <i class="bx bxs-star"></i>
+                        </div>
+                        {% if product.discount_price %}
+                        <h6>
+                            {% if product.discount_price < product.price %}
+                            <span>€{{ product.discount_price }}</span>
+                            <span style="text-decoration: line-through;">(€{{ product.price }})</span>
+                            {% else %}
+                            <span>€{{ product.price }}</span>
+                            {% endif %}
+                            <span><button onclick="handleButtonClick(event, 'addToCart')">Add</button></span>
+                        </h6>
+                        {% else %}
+                        <h6>€{{ product.original_price }} <span><button
+                                    onclick="handleButtonClick(event, 'addToCart')">Add</button></span></h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
