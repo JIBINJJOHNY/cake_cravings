@@ -11,3 +11,11 @@ class CategoryAdmin(admin.ModelAdmin):
     def category_image(self, obj):
         return mark_safe(f'<img src="{obj.image.url}" width="50" height="50" />')
     category_image.short_description = 'Image'
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)} 
+    list_display = ('name', 'slug', 'is_active', 'created_at', 'updated_at')
+    list_filter = ('is_active', 'created_at', 'updated_at')
+    search_fields = ('name', 'slug')
+
