@@ -24,6 +24,7 @@ class CategoryAdmin(admin.ModelAdmin):
         return mark_safe(f'<img src="{obj.image.url}" width="50" height="50" />')
 
     category_image.short_description = 'Image'
+
 @admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
     list_display = ('percentage', 'start_date', 'end_date', 'is_active')
@@ -31,7 +32,6 @@ class DiscountAdmin(admin.ModelAdmin):
 class ProductImageInline(admin.TabularInline):  
     model = ProductImage
     extra = 1  # Number of empty image forms to display
-
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
@@ -45,7 +45,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('name', 'slug', 'description', 'category', 'tags', 'is_active', 'availability', 'ingredients'),
         }),
         ('Pricing Information', {
-            'fields': ('price', 'discount'),
+            'fields': ('price', 'discount_price'),  # Change 'discount' to 'discount_price'
         }),
         ('Product Specific Information', {
             'fields': ('size',),

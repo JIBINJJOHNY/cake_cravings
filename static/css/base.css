@@ -1,13 +1,36 @@
-/* custom.css */
+/*------ Global Settings------*/
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-/* Apply styles similar to your body */
-body {
+html {
+    scroll-behavior: smooth;
+}
+
+.container-fluid,
+.container-lg,
+.container-md,
+.container-sm,
+.container-xl {
+    width: 100%;
+    padding-right: 0px;
+    padding-left: 0px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.home-section {
     background: url('/static/images/homepage_background.jpg') no-repeat center center fixed;
     background-size: cover;
     height: calc(100vh - 164px);
     color: rgb(38, 15, 38);
     font-family: 'Lato';
-    margin: 0;
+    margin-top: 0px;
+
     /* Remove default body margin */
 }
 
@@ -127,22 +150,19 @@ h2 {
     }
 }
 
-#product-cards h1 {
-    text-align: center;
-    font-weight: bold;
-    margin-top: 50px;
-    color: #4d3056;
-    text-shadow: 1px 1px 1px #fafafa;
-    border-bottom: 2px solid #4d3056;
+/* Add this CSS code to your existing stylesheet or create a new one */
+
+/* Style for product cards */
+#product-cards {
+    margin-top: 20px;
 }
 
-#product-cards .card {
+.card {
     background-color: #f8f7f8;
     box-shadow: 0 0 3px #4d3056;
     border-radius: 5px;
     cursor: pointer;
-    width: 82%;
-
+    width: 100%;
 }
 
 .overlay {
@@ -154,14 +174,13 @@ h2 {
     width: 70px;
 }
 
-#product-cards .card:hover .overlay {
+.card:hover .overlay {
     opacity: 1;
     margin-left: 5%;
     transition: 0.5s ease;
 }
 
-.overlay i img {
-    background-color: #4d3056;
+.overlay i {
     height: 30px;
     width: 30px;
     font-size: 20px;
@@ -177,27 +196,35 @@ h2 {
     box-shadow: none;
 }
 
-#product-cards h3 {
+h1 {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 20px;
     color: #4d3056;
-    text-shadow: 1px 1px 1px black;
+    text-shadow: 1px 1px 1px #fafafa;
+    border-bottom: 2px solid #4d3056;
+}
+
+.card-body-content {
+    height: 120px;
 }
 
 .star .checked {
     color: yellow;
 }
 
-#product-cards p {
-    color: #2e1700;
-    font-weight: bold;
+h3 {
+    color: hsl(286, 28%, 26%);
+    font-size: 20px;
 }
 
-#product-cards h6 {
+h6 {
     font-size: 20px;
     color: #4d3056;
     font-weight: bold;
 }
 
-#product-cards h6 span button {
+h6 span button {
     width: 100px;
     height: 26px;
     font-size: 15px;
@@ -211,7 +238,77 @@ h2 {
     cursor: pointer;
 }
 
-#product-cards h6 span button:hover {
+h6 span button:hover {
     background-color: #4d3056;
     color: white;
+}
+
+/* Style for price filter section */
+#price-filter {
+    margin-top: 20px;
+}
+
+.slider-container {
+    margin-top: 10px;
+}
+
+.slider-range {
+    width: 80%;
+}
+
+.filter-button {
+    margin-top: 10px;
+    background-color: #4d3056;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.form-check-input {
+    position: absolute;
+    margin-top: 0rem;
+    margin-left: 0.05rem;
+    max-width: 45px;
+}
+
+.category-and-sorting {
+    background-color: #4d3056;
+    /* Set your desired background color */
+    padding: 15px;
+
+
+}
+
+.categories h3,
+.sorting-options h3 {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.categories ul,
+.sorting-options ul {
+    list-style: none;
+    padding: 0;
+}
+
+.categories li,
+.sorting-options li {
+    margin-bottom: 10px;
+}
+
+.categories a,
+.sorting-options a {
+    text-decoration: none;
+    color: #ffffff;
+    transition: color 0.3s ease;
+    text-align: center;
+}
+
+.categories a:hover,
+.sorting-options a:hover {
+    color: #ffffff;
+    text-align: center;
+    /* Set your desired link hover color */
 }

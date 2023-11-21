@@ -1,72 +1,106 @@
 {% extends "base.html" %}
 {% load static %}
-{% block content %}
 
-<div id="product-cards">
-    <h1>Products</h1>
-    <div class="container">
-        <div class="row">
-            {% for product in products %}
-            <div class="col-md-3 py-3 py-md-0">
-                <div class="card">
-                    <!-- Make the entire card clickable and redirect to the product_detail page -->
-                    <a href="#">
-                        <div class="overlay">
-                            <!-- "Quick View" button -->
-                            <button type="button" class="btn btn-secondary quick-view-button" title="Quick View"
-                                data-product-id="{{ product.id }}" data-toggle="modal" data-target="#quickViewModal"
-                                onclick="handleButtonClick(event, 'quickView')">
-                                <i><img src="{% static 'image/views.png' %}" alt="" width="30px"></i>
-                            </button>
-                            <!-- "Add to Wishlist" button -->
-                            <button id="addToWishlistBtn" class="btn btn-secondary" title="Add to Wishlist"
-                                data-product-id="{{ product.id }}" onclick="addToWishlist(event, '{{ product.id }}')">
-                                <i><img src="{% static 'image/heart.png' %}" alt="add to wishlist icon"
-                                        width="30px"></i>
-                            </button>
-                            <!-- "Add to Cart" button -->
-                            <form method="POST" action="">
-                                {% csrf_token %}
-                                <input type="hidden" name="product_id" value="{{ product.id }}">
-                                <button type="button" class="btn btn-secondary" title="Add to Cart"
-                                    onclick="handleButtonClick(event, 'addToCart')">
-                                    <i><img src="{% static 'image/add.png' %}" alt="add to cart icon" width="30px"></i>
-                                </button>
-                            </form>
-                        </div>
-                        <!-- Set a maximum height for the image -->
-                        <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
-                            style="max-height: 200px;">
-                    </a>
-                    <div class="card-body">
-                        <h3>{{ product.name }}</h3>
-                        <div class="star">
-                            <i class="bx bxs-star checked"></i>
-                            <i class="bx bxs-star checked"></i>
-                            <i class="bx bxs-star checked"></i>
-                            <i class="bx bxs-star"></i>
-                            <i class="bx bxs-star"></i>
-                        </div>
-                        {% if product.discount_price %}
-                        <h6>
-                            {% if product.discount_price < product.price %}
-                            <span>€{{ product.discount_price }}</span>
-                            <span style="text-decoration: line-through;">(€{{ product.price }})</span>
-                            {% else %}
-                            <span>€{{ product.price }}</span>
-                            {% endif %}
-                            <span><button onclick="handleButtonClick(event, 'addToCart')">Add</button></span>
-                        </h6>
-                        {% else %}
-                        <h6>€{{ product.original_price }} <span><button
-                                    onclick="handleButtonClick(event, 'addToCart')">Add</button></span></h6>
-                        {% endif %}
-                    </div>
+{% block content %}
+<div class="container" style="padding-top: 60px;">
+    <div class="row">
+        <!-- Left Column for Category List and Sorting Options -->
+        <div class="col-md-3">
+            <div class="category-and-sorting">
+                <!-- Category List -->
+                <div class="categories">
+                    <h3>Categories:</h3>
+                    <ul>
+                        <li><a href="{% url 'products:all_products' %}">All</a></li>
+                        {% for category in all_categories %}
+                        <li><a
+                                href="{% url 'products:products_by_category' category_slug=category.slug %}">{{ category.name }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <!-- Sorting Options -->
+                <div class="sorting-options">
+                    <h3>Sort by:</h3>
+                    <ul>
+                        <li><a href="?sort=name&direction=asc">Name (A-Z)</a></li>
+                        <li><a href="?sort=name&direction=desc">Name (Z-A)</a></li>
+                        <li><a href="?sort=price&direction=asc">Price (Low to High)</a></li>
+                        <li><a href="?sort=price&direction=desc">Price (High to Low)</a></li>
+                        <li><a href="?sort=rating&direction=desc">Rating (High to Low)</a></li>
+                        <!-- Add more sorting options if needed -->
+                    </ul>
                 </div>
             </div>
-            {% endfor %}
+        </div>
+
+        <!-- Right Column for Product Cards -->
+        <div class="col-md-9">
+            <div id="product-cards">
+                <h1>Products</h1>
+
+                <div class="row">
+                    {% for product in products %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <a href="#">
+                                <div class="overlay">
+                                    <button id="addToWishlistBtn" class="btn btn-secondary" title="Add to Wishlist"
+                                        data-product-id="{{ product.id }}"
+                                        onclick="addToWishlist(event, '{{ product.id }}')">
+                                        <i class="fas fa-heart" style="font-size: 20px; color: #840a0a;"></i>
+                                    </button>
+
+                                    <form method="POST" action="">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <button type="button" class="btn btn-secondary" title="Add to Cart"
+                                            onclick="handleButtonClick(event, 'addToCart')">
+                                            <i class="fas fa-shopping-cart"
+                                                style="font-size: 20px; color: #0d0a0d;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div class="image-container" style="height: 200px; overflow: hidden;">
+                                    <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                                        style="width: 100%; height: auto;">
+                                </div>
+                            </a>
+
+                            <div class="card-body">
+                                <div class="card-body-content" style="height: 120px;">
+                                    <h3>{{ product.name }}</h3>
+                                    <div class="star">
+                                        <i class="bx bxs-star checked"></i>
+                                        <i class="bx bxs-star checked"></i>
+                                        <i class="bx bxs-star checked"></i>
+                                        <i class="bx bxs-star"></i>
+                                        <i class="bx bxs-star"></i>
+                                    </div>
+                                    {% if product.discount_price %}
+                                    <h6>
+                                        {% if product.discount_price < product.price %}
+                                        <span>€{{ product.discount_price }}</span>
+                                        <span style="text-decoration: line-through;">(€{{ product.price }})</span>
+                                        {% else %}
+                                        <span>€{{ product.price }}</span>
+                                        {% endif %}
+                                        <span><button
+                                                onclick="handleButtonClick(event, 'addToCart')">Add</button></span>
+                                    </h6>
+                                    {% else %}
+                                    <h6>€{{ product.price }} <span><button
+                                                onclick="handleButtonClick(event, 'addToCart')">Add</button></span></h6>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
-
 {% endblock %}

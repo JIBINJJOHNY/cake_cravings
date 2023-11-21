@@ -1,70 +1,59 @@
-from django.shortcuts import render, redirect,render, get_object_or_404
+from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.contrib import messages
 from django.db.models import Q
+from django.db.models.functions import Lower
 from .models import Product, Category
+import json
 from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
 
-def all_products(request):
+def all_products(request, category_slug=None):
+    """ A view to show all products, including sorting and search queries """
+
     products = Product.objects.filter(is_active=True)
-    query = request.GET.get('q')
-    category_filter = request.GET.get('category')
-    sorting = request.GET.get('sort')
-    
-    if query:
-        products = products.filter(Q(name__icontains=query) | Q(description__icontains=query))
-    
-    if category_filter:
-        products = products.filter(category__slug=category_filter)
-       
+    query = None
+    sort = request.GET.get('sort', 'name')
+    direction = request.GET.get('direction', 'asc')
 
-    if sorting:
-        if sorting == 'price_asc':
-            products = products.order_by('original_price')
-        elif sorting == 'price_desc':
-            products = products.order_by('-original_price')
-        elif sorting == 'name_asc':
-            products = products.order_by('name')
-        elif sorting == 'name_desc':
-            products = products.order_by('-name')
-        elif sorting == 'rating_asc':
-            products = products.order_by('rating')
-        elif sorting == 'rating_desc':
-            products = products.order_by('-rating')
-    
+    # Apply category filter if category_slug is provided
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        products = products.filter(category=category)
+
+    if sort == 'name':
+        sort_key = 'name' if direction == 'asc' else '-name'
+    elif sort == 'price':
+        sort_key = 'price' if direction == 'asc' else '-price'
+    elif sort == 'rating':
+        # Assuming 'rating' is a field in your Product model
+        sort_key = 'rating' if direction == 'asc' else '-rating'
+    else:
+        # Default to sorting by name in ascending order
+        sort_key = 'name'
+
+    products = products.order_by(sort_key)
+
+    if request.GET:
+        if 'q' in request.GET:
+            query = request.GET['q']
+            if not query:
+                messages.error(request, "You didn't enter any search criteria!")
+                return redirect(reverse('products'))
+
+            queries = Q(name__icontains=query) | Q(description__icontains=query)
+            products = products.filter(queries)
+
+    # Retrieve all categories for the category list
+    all_categories = Category.objects.filter(is_active=True)
+
+    current_sorting = f'{sort}_{direction}'
+
     context = {
         'products': products,
         'search_term': query,
-        'current_category': category_filter,
-        'current_sorting': sorting,
+        'all_categories': all_categories,
+        'current_sorting': current_sorting,
+        'selected_category_slug': category_slug,  # Pass the selected category slug for highlighting in the template
     }
-    
+
     return render(request, 'products/products.html', context)
-# views.py
-def products_by_category(request, category_slug):
-    category = get_object_or_404(Category, slug=category_slug)
-    products = Product.objects.filter(category=category, is_active=True)
-    
-    context = {
-        'products': products,
-        'current_category': category,
-    }
-    
-    return render(request, 'products/products.html', context)
-
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    
-    # Fetch reviews for the current product
-    reviews = Review.objects.filter(product=product)
-
-    # Include the review form for adding new reviews
-    review_form = ReviewForm()
-
-    context = {
-        'product': product,
-        'reviews': reviews,
-        'review_form': review_form,
-    }
-    return render(request, 'products/product_detail.html', context)

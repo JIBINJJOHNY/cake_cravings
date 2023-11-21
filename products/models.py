@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
 from decimal import Decimal
-
+from django.utils import timezone
 
 class Category(models.Model):
     name = models.CharField(
@@ -95,11 +95,6 @@ class Tag(models.Model):
     def get_not_active_tags(cls):
         """Get not active tags"""
         return cls.objects.filter(is_active=False)
-from django.db import models
-from django.utils.text import slugify
-from cloudinary.models import CloudinaryField
-from decimal import Decimal
-from django.utils import timezone
 
 class Discount(models.Model):
     percentage = models.PositiveIntegerField(help_text='Discount percentage')
@@ -160,6 +155,7 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+
 class ProductImage(models.Model):
     product = models.ForeignKey(
         'Product',
@@ -169,7 +165,7 @@ class ProductImage(models.Model):
         help_text='The associated product for this image.'
     )
     image = CloudinaryField(
-        'product_image',
+        'image', 
         folder='product_images',
         null=True,
         blank=True,
@@ -210,22 +206,11 @@ class ProductImage(models.Model):
     def __str__(self):
         return f"Image for {self.product.name}"
 
-def save(self, *args, **kwargs):
-    if not self.slug:
-        self.slug = slugify(self.name, allow_unicode=True)
-
-    if self.default_image:
-        for image in self.product.images.all().exclude(id=self.id):
-            image.default_image = False
-            image.save()
-
-    super().save(*args, **kwargs)
-
     @property
     def image_url(self):
         if self.image:
             return self.image.url
-        return 'static/images/default_product_image.png'
+        return 'static/images/default_image.png'
 
     @classmethod
     def get_active_product_images(cls):
@@ -235,4 +220,10 @@ def save(self, *args, **kwargs):
     def get_not_active_product_images(cls):
         return cls.objects.filter(is_active=False)
 
+    def save(self, *args, **kwargs):
+        if self.default_image:
+            for image in self.product.images.all().exclude(id=self.id):
+                image.default_image = False
+                image.save()
 
+        super().save(*args, **kwargs)
