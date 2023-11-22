@@ -325,3 +325,26 @@ h6 span button:hover {
 #product-cards {
     margin-top: 50px;
 }
+
+#back-to-top-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ffffff;
+    /* White background */
+    color: #000000;
+    /* Black arrow color */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    /* Optional: Add a subtle box shadow */
+}
+
+#back-to-top-btn:hover {
+    background-color: #e0e0e0;
+    /* Optional: Change background color on hover */
+}
