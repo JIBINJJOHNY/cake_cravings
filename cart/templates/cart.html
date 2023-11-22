@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<h1>Your Shopping Bag</h1>
+
+{% if bag_items %}
+<table>
+    <thead>
+        <tr>
+            <th>Product</th>
+            <th>Image</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in bag_items %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td><img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="50"></td>
+            <td>${{ item.product.price }}</td>
+            <td>
+                <button onclick="adjustQuantity('{{ item.item_id }}', 'decrease')">-</button>
+                {{ item.quantity }}
+                <button onclick="adjustQuantity('{{ item.item_id }}', 'increase')">+</button>
+            </td>
+            <td>${{ item.product.price|multiply:item.quantity }}</td>
+            <td>
+                <button onclick="removeFromBag('{{ item.item_id }}')">Remove</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<p>Total: ${{ total }}</p>
+<p>Product Count: {{ product_count }}</p>
+<p>Delivery Cost: ${{ delivery }}</p>
+<p>Grand Total: ${{ grand_total }}</p>
+
+<!-- Add more information as needed -->
+
+<!-- Add AJAX script to update the bag contents without refreshing the page -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script>
+    function adjustQuantity(item_id, action) {
+        $.ajax({
+            type: 'POST',
+            url: '/adjust_bag/' + item_id + '/',
+            data: {
+                'action': action,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            dataType: 'json',
+            success: function (data) {
+                // Update your UI based on the JSON response
+                console.log(data);
+            },
+            error: function (error) {
+                console.error(error.responseText);
+            }
+        });
+    }
+
+    function removeFromBag(item_id) {
+        $.ajax({
+            type: 'POST',
+            url: '/remove_from_bag/' + item_id + '/',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function (data) {
+                // Update your UI based on the response
+                console.log(data);
+            },
+            error: function (error) {
+                console.error(error.responseText);
+            }
+        });
+    }
+</script>
+{% else %}
+<p>Your shopping bag is empty.</p>
+{% endif %}
+{% endblock %}

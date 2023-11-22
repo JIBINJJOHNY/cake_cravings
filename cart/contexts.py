@@ -3,19 +3,19 @@ from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from products.models import Product
 
-def cake_cravings_bag_contents(request):
-    bag_items = []
+def cart_contents(request):
+    cart_items = []
     total = 0
     product_count = 0
-    bag = request.session.get('cake_cravings_bag', {})
+    cart = request.session.get('cake_cravings_cart', {})
     selected_delivery_option = request.session.get('delivery_option', 'pickup')
 
-    for item_id, item_data in bag.items():
+    for item_id, item_data in cart.items():
         if isinstance(item_data, int):
             cake = get_object_or_404(Product, pk=item_id)
             total += item_data * cake.price
             product_count += item_data
-            bag_items.append({
+            cart_items.append({
                 'item_id': item_id,
                 'quantity': item_data,
                 'cake': cake,
@@ -36,7 +36,7 @@ def cake_cravings_bag_contents(request):
     grand_total = delivery + total
 
     context = {
-        'bag_items': bag_items,
+        'cart_items': cart_items,
         'total': total,
         'product_count': product_count,
         'delivery': delivery,

@@ -49,6 +49,8 @@ def all_products(request, category_slug=None):
     product_counts = Product.objects.values('category__name').annotate(count=Count('id'))
 
     current_sorting = f'{sort}_{direction}'
+    # Add a success message
+    messages.success(request, 'Successfully performed the action.')
 
     context = {
         'products': products,
