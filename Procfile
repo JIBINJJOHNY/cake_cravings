@@ -1,1 +1,1 @@
-web: gunicorn cakecravings.wsgi
+web: gunicorn cakecravings.wsgi:application
