@@ -5,7 +5,7 @@
 <div class="container" style="padding-top: 60px;">
     <div class="row">
         <div class="col-md-3">
-            <div id="breadcrumb-container"></div>
+            <div class="breadcrumb" id="breadcrumb-container"></div>
             <div class="category-and-sorting">
 
                 <!-- Category List -->
@@ -44,7 +44,8 @@
                     {% for product in products %}
                     <div class="col-md-4 mb-4">
                         <div class="card">
-                            <a href="#">
+                            <a href="{% url 'products:product_detail' product.id %}"
+                                onclick="redirectToProductDetail('{{ product.id }}')">
                                 <div class="overlay">
                                     <button id="addToWishlistBtn" class="btn btn-secondary" title="Add to Wishlist"
                                         data-product-id="{{ product.id }}"
@@ -160,6 +161,11 @@
             });
         });
     });
+
+    function redirectToProductDetail(productId) {
+        // Redirect to the product_detail page
+        window.location.href = `/products/${productId}`;
+    }
 </script>
 
 {% endblock %}

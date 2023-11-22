@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'products:all_products' %}">Products</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+                </ol>
+            </nav>
+            <!-- Image Gallery -->
+            <div class="container mt-4">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="image-gallery">
+                            <!-- Main Image -->
+                            <div class="main-image">
+                                <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                                    class="img-fluid mt-4" id="mainImage">
+                            </div>
+                            <!-- Thumbnails -->
+                            <div class="thumbnails" onclick="changeMainImage(event)">
+                                {% for image in product.images.all %}
+                                <img src="{{ image.image_url }}" alt="product image" class="thumbnail"
+                                    data-main-image="{{ image.image_url }}">
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-6 product-detail mt-4">
+            <!-- Existing Product Details -->
+            <h1>{{ product.name }}</h1>
+            <p class="text-muted">{{ product.description }}</p>
+
+            <div class="product-price">
+                <span class="current-price text-brand" id="product-price">€{{ product.price }}</span>
+                {% if product.discounted_price %}
+                <span class="save-price font-md color3 ml-3">{{ product.discount_percentage }} Off</span>
+                <span class="old-price font-md ml-3">€{{ product.discounted_price }}</span>
+                {% endif %}
+            </div>
+
+            <div class="product-detail-rating mt-3">
+                <div class="product-rate-cover text-end">
+                    <div class="product-rate d-inline-block">
+                        <!-- Placeholder for product rating -->
+                        Rating: {{ product.rating }}
+                    </div>
+                    <span class="font-small ml-2 text-muted"> ({{ product.num_reviews }} reviews)</span>
+                </div>
+            </div>
+
+            {% if product.category.name|lower == 'cakes' %}
+            <!-- Size Option for Cakes -->
+            <div class="product-size mt-3">
+                <label for="product-size" class="mr-2">Size:</label>
+                <select id="product-size" onchange="updatePrice()" class="form-select">
+                    <option value="S">Small</option>
+                    <option value="M">Medium</option>
+                    <option value="L">Large</option>
+                </select>
+                <img src="{% static 'images/small.png' %}" alt="small cake icon">
+                <img src="{% static 'images/medium.png' %}" alt="medium cake icon">
+                <img src="{% static 'images/large.png' %}" alt="large cake icon">
+            </div>
+            {% endif %}
+            <div class="detail-extralink mt-4">
+                <div class="detail-qty radius">
+                    <span class="quantity-label">Quantity:</span>
+                    <button class="quantity-button" onclick="decreaseQuantity()">-</button>
+                    <span id="quantity">1</span>
+                    <button class="quantity-button" onclick="increaseQuantity()">+</button>
+                </div>
+                <div class="product-extra-link2 mt-3">
+                    <button class="btn btn-success" onclick="addToCart()">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                    <a aria-label="Add To Wishlist" class="btn ml-2 wishlist-button" onclick="addToWishlist()" href="#"
+                        style="border: 1px solid black;">
+                        <i class="fas fa-heart" style="color: red;"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="product-extra-link2 mt-3">
+        <!-- Ingredients Section -->
+        <div class="ingredients">
+            <h2>Classic Ingredients</h2>
+            <p>{{ product.ingredients }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 feature">
+            <img src="{% static 'images/flour_mix_icon.png' %}" alt="flour mixing icon" class="img-fluid">
+            <div>
+                <h3>Made with Care Every Day</h3>
+                <p>Crafting each product with precision, we use only the finest ingredients to ensure a delightful
+                    treat.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 feature">
+            <img src="{% static 'images/caketruck.png' %}" alt="cake truck icon" class="img-fluid">
+            <div>
+                <h3>Swift Local Deliveries</h3>
+                <p>We offer prompt local delivery services, bringing our delicious creations to homes and businesses in
+                    proximity to our establishments across Frankfurt and Offenbach.</p>
+            </div>
+        </div>
+
+        <div class="col-md-4 feature">
+            <img src="{% static 'images/bakery.png' %}" alt="bakery icon" class="img-fluid">
+            <div>
+                <h3>Bakery Delivery</h3>
+                <p>Using only the best and freshest ingredients, our bakeries create our signature delicacies every
+                    day.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h1 class="view-review">Reviews for {{ product.name }}</h1>
+            <ul class="reviews-list">
+                {% for review in reviews %}
+                <li class="review-item">
+                    <h3>{{ review.user.first_name }}</h3>
+                    <p class="created-at">
+                        <time datetime="{{ review.created_at|date:'Y-m-d' }}">
+                            Created on {{ review.created_at|date:'F j, Y' }}
+                        </time>
+                    </p>
+                    <div class="rating">
+                        <div class="rating-stars">
+                            {% for star in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating|add:"0" %}
+                            <i class="fas fa-star rated"></i>
+                            {% else %}
+                            <i class="far fa-star"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p>{{ review.review }}</p>
+
+                    {% if current_user == review.user %}
+                    <div class="review-actions">
+                        <a href="{% url 'edit_review' review.id %}" class="btn btn-success">Edit</a>
+                        <a href="{% url 'delete_review' product_id=product.id review_id=review.id %}"
+                            class="btn btn-danger">Delete</a>
+                    </div>
+                    {% endif %}
+                </li>
+                {% empty %}
+                <li>No reviews available.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+<script>
+    function changeMainImage(event) {
+        var thumbnail = event.target;
+        if (thumbnail.classList.contains('thumbnail')) {
+            var mainImage = document.getElementById('mainImage');
+            var newImageSource = thumbnail.getAttribute('data-main-image');
+            mainImage.src = newImageSource;
+        }
+    }
+
+    function updatePrice() {
+        var sizeSelect = document.getElementById('product-size');
+        var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
+        var priceElement = document.getElementById('product-price');
+
+        // Update the price based on the selected size
+        switch (selectedSize) {
+            case 'S':
+                priceElement.textContent = '€30.00'; // Update with your actual price
+                break;
+            case 'M':
+                priceElement.textContent = '€45.00'; // Update with your actual price
+                break;
+            case 'L':
+                priceElement.textContent = '€80.00'; // Update with your actual price
+                break;
+            default:
+                break;
+        }
+    }
+</script>
+{% endblock %}

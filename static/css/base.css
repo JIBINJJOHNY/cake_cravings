@@ -348,3 +348,164 @@ h6 span button:hover {
     background-color: #e0e0e0;
     /* Optional: Change background color on hover */
 }
+
+
+.product-quantity {
+    display: flex;
+    align-items: center;
+}
+
+.quantity-label {
+    margin-right: 10px;
+}
+
+.breadcrumb-container {
+    position: relative;
+    top: 70px;
+    /* Adjust the value as needed */
+}
+
+.quantity-button {
+    background-color: #462b48;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+#quantity {
+    margin: 0 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.button-add-to-cart {
+    background-color: #462b48;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.img-fluid {
+    margin-top: 50px;
+}
+
+.wishlist-button {
+    transition: color 0.3s;
+}
+
+.product-detail {
+    margin-top: 60px;
+}
+
+.feature {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: transform 0.3s;
+    /* Add transition for smooth effect */
+}
+
+.product-size img {
+    width: 90px;
+    /* Set the desired width */
+    margin-bottom: 5px;
+    /* Adjust margin as needed */
+}
+
+.product-price span {
+    color: #462b48;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.save-price,
+.old-price {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.main-image img {
+    width: 100%;
+    /* Set the desired width */
+    border: 2px solid #462b48;
+    /* Add a border with your preferred color */
+    border-radius: 10px;
+    /* Add border-radius for rounded corners */
+    margin-top: 20px;
+    /* Adjust margin as needed */
+}
+
+.image-gallery {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.main-image {
+    width: 100%;
+    text-align: center;
+}
+
+.thumbnails {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.thumbnail {
+    width: 80px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.thumbnail:hover {
+    border: 2px solid #462b48;
+}
+
+.ingredients {
+    text-align: center;
+    background-color: #f8f8f8;
+    /* Add your preferred background color */
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+/* Adjust the width as needed */
+.feature img {
+    width: 30px;
+    /* Set the desired width */
+    margin-bottom: 10px;
+}
+
+/* Hover effect */
+.feature:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.star-rating {
+    font-size: 24px;
+}
+
+.star-rating i {
+    color: #ccc;
+    cursor: pointer;
+}
+
+.star-rating i.checked {
+    color: gold;
+}

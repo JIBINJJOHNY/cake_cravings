@@ -63,3 +63,14 @@ def all_products(request, category_slug=None):
     }
 
     return render(request, 'products/products.html', context)
+def product_detail(request, product_id):
+    # Retrieve the product using the product_id
+    product = get_object_or_404(Product, pk=product_id)
+
+    # You can customize the context data based on your requirements
+    context = {
+        'product': product,
+    }
+
+    # Render the product_detail.html template with the given context
+    return render(request, 'products/product_detail.html', context)
