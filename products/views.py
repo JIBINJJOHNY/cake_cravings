@@ -1,11 +1,8 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.db.models.functions import Lower
 from .models import Product, Category
-import json
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 
 def all_products(request, category_slug=None):
     """ A view to show all products, including sorting and search queries """
@@ -44,7 +41,12 @@ def all_products(request, category_slug=None):
             products = products.filter(queries)
 
     # Retrieve all categories for the category list
-    all_categories = Category.objects.filter(is_active=True)
+    all_categories = Category.objects.all()
+    # Get total product count
+    total_product_count = Product.objects.filter(is_active=True).count()
+    print("Total Product Count:", total_product_count)
+    # Get product counts for each category
+    product_counts = Product.objects.values('category__name').annotate(count=Count('id'))
 
     current_sorting = f'{sort}_{direction}'
 
@@ -52,8 +54,10 @@ def all_products(request, category_slug=None):
         'products': products,
         'search_term': query,
         'all_categories': all_categories,
+        'product_counts': product_counts,
         'current_sorting': current_sorting,
         'selected_category_slug': category_slug,  # Pass the selected category slug for highlighting in the template
+        'total_product_count': total_product_count,  
     }
 
     return render(request, 'products/products.html', context)

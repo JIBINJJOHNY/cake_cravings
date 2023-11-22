@@ -150,7 +150,6 @@ h2 {
     }
 }
 
-/* Add this CSS code to your existing stylesheet or create a new one */
 
 /* Style for product cards */
 #product-cards {
@@ -311,4 +310,18 @@ h6 span button:hover {
     color: #ffffff;
     text-align: center;
     /* Set your desired link hover color */
+}
+
+#breadcrumb-container {
+    margin-top: 50px;
+
+}
+
+/* Add space between breadcrumb and category section */
+.category-and-sorting {
+    margin-top: 35px;
+}
+
+#product-cards {
+    margin-top: 50px;
 }

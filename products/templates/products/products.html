@@ -1,24 +1,25 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% load custom_filters %}
 {% block content %}
 <div class="container" style="padding-top: 60px;">
     <div class="row">
-        <!-- Left Column for Category List and Sorting Options -->
         <div class="col-md-3">
+            <div id="breadcrumb-container"></div>
             <div class="category-and-sorting">
+
                 <!-- Category List -->
                 <div class="categories">
                     <h3>Categories:</h3>
                     <ul>
-                        <li><a href="{% url 'products:all_products' %}">All</a></li>
+                        <li><a href="{% url 'products:all_products' %}">All ({{ total_product_count }})</a></li>
                         {% for category in all_categories %}
-                        <li><a
-                                href="{% url 'products:products_by_category' category_slug=category.slug %}">{{ category.name }}</a>
-                        </li>
+                        <li><a href="{% url 'products:products_by_category' category_slug=category.slug %}">{{ category.name }}
+                                ({{ product_counts|get_category_count:category.name }})</a></li>
                         {% endfor %}
                     </ul>
                 </div>
+
                 <!-- Sorting Options -->
                 <div class="sorting-options">
                     <h3>Sort by:</h3>
@@ -103,4 +104,5 @@
         </div>
     </div>
 </div>
+<script src="{% static 'js/breadscrumb.js' %}"></script>
 {% endblock %}
