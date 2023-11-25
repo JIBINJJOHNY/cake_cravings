@@ -42,11 +42,13 @@
             <p class="text-muted">{{ product.description }}</p>
 
             <div class="product-price">
+
                 <span class="current-price text-brand" id="product-price">€{{ product.price }}</span>
                 {% if product.discounted_price %}
                 <span class="save-price font-md color3 ml-3">{{ product.discount_percentage }} Off</span>
                 <span class="old-price font-md ml-3">€{{ product.discounted_price }}</span>
                 {% endif %}
+
             </div>
 
             <div class="product-detail-rating mt-3">

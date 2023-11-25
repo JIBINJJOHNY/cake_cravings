@@ -1,89 +1,67 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block content %}
+<div class="container">
+    <h2>Your Cart</h2>
 
-<h1>Your Shopping Bag</h1>
+    {% if cart_items %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Item Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cart_items %}
+            <tr>
+                <td>{{ item.product.name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>€{{ item.product.price }}</td>
+                <td>€{{ item.item_total }}</td>
+                <td>
+                    <a href="{% url 'view_cart' %}">Adjust Quantity</a>
 
-{% if bag_items %}
-<table>
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Image</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in bag_items %}
-        <tr>
-            <td>{{ item.product.name }}</td>
-            <td><img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" width="50"></td>
-            <td>${{ item.product.price }}</td>
-            <td>
-                <button onclick="adjustQuantity('{{ item.item_id }}', 'decrease')">-</button>
-                {{ item.quantity }}
-                <button onclick="adjustQuantity('{{ item.item_id }}', 'increase')">+</button>
-            </td>
-            <td>${{ item.product.price|multiply:item.quantity }}</td>
-            <td>
-                <button onclick="removeFromBag('{{ item.item_id }}')">Remove</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                    <form method="post" action="{% url 'remove_from_cart' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                        <button type="submit">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-<p>Total: ${{ total }}</p>
-<p>Product Count: {{ product_count }}</p>
-<p>Delivery Cost: ${{ delivery }}</p>
-<p>Grand Total: ${{ grand_total }}</p>
+    <p>Total: €{{ total }}</p>
+    <p>Delivery: €{{ delivery }}</p>
+    <p>Grand Total: €{{ grand_total }}</p>
 
-<!-- Add more information as needed -->
+    <form method="post" action="#">
+        {% csrf_token %}
+        <label for="delivery_option">Select Delivery Option:</label>
+        <select name="delivery_option" id="delivery_option">
+            <option value="pickup" {% if selected_delivery_option == 'pickup' %}selected{% endif %}>Pickup</option>
+            <option value="local_delivery" {% if selected_delivery_option == 'local_delivery' %}selected{% endif %}>
+                Local Delivery</option>
+            <option value="national_delivery"
+                {% if selected_delivery_option == 'national_delivery' %}selected{% endif %}>National Delivery</option>
+        </select>
+        <button type="submit">Proceed to Checkout</button>
+    </form>
 
-<!-- Add AJAX script to update the bag contents without refreshing the page -->
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    function adjustQuantity(item_id, action) {
-        $.ajax({
-            type: 'POST',
-            url: '/adjust_bag/' + item_id + '/',
-            data: {
-                'action': action,
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            dataType: 'json',
-            success: function (data) {
-                // Update your UI based on the JSON response
-                console.log(data);
-            },
-            error: function (error) {
-                console.error(error.responseText);
-            }
-        });
-    }
-
-    function removeFromBag(item_id) {
-        $.ajax({
-            type: 'POST',
-            url: '/remove_from_bag/' + item_id + '/',
-            data: {
-                'csrfmiddlewaretoken': '{{ csrf_token }}'
-            },
-            success: function (data) {
-                // Update your UI based on the response
-                console.log(data);
-            },
-            error: function (error) {
-                console.error(error.responseText);
-            }
-        });
-    }
-</script>
-{% else %}
-<p>Your shopping bag is empty.</p>
-{% endif %}
+    {% else %}
+    <h1>Your cart is empty.</h1>
+    <a href="{% url 'products:all_products' %}" class="btn btn-outline-black rounded-0 btn-lg">
+        <span class="icon">
+            <i class="fa-solid fa-arrow-left" style="color: #462b48;"></i>
+        </span>
+        <span class="text-uppercase">Our Menu</span>
+    </a>
+    {% endif %}
+</div>
 {% endblock %}

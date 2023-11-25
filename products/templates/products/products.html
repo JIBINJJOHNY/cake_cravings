@@ -42,7 +42,7 @@
 
                 <div class="row">
                     {% for product in products %}
-                    <div class="col-md-4 mb-4">
+                    <div class="col-md-4 mb-4 product-card" data-product-id="{{ product.id }}">
                         <div class="card">
                             <a href="{% url 'products:product_detail' product.id %}"
                                 onclick="redirectToProductDetail('{{ product.id }}')">
@@ -52,20 +52,6 @@
                                         onclick="addToWishlist(event, '{{ product.id }}')">
                                         <i class="fas fa-heart" style="font-size: 20px; color: #840a0a;"></i>
                                     </button>
-
-                                    <!-- Modify your form to include an "id" attribute -->
-                                    <form method="POST" action="{% url 'cart:add_to_cart' product.id %}"
-                                        class="add-to-cart-form">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="quantity" value="1">
-                                        <input type="hidden" name="product_size"
-                                            value="{% if product.size %}{{ product.size }}{% endif %}">
-                                        <button type="submit" class="btn btn-secondary" title="Add to Cart">
-                                            <i class="fas fa-shopping-cart"
-                                                style="font-size: 20px; color: #0d0a0d;"></i>
-                                        </button>
-                                    </form>
-
                                 </div>
 
                                 <div class="image-container" style="height: 200px; overflow: hidden;">
@@ -92,12 +78,23 @@
                                         {% else %}
                                         <span>€{{ product.price }}</span>
                                         {% endif %}
-                                        <span><button
-                                                onclick="handleButtonClick(event, 'addToCart')">Add</button></span>
+                                        <span> <button type="submit" class="btn btn-secondary" title="Add to Cart"
+                                                onclick="handleAddToCartClick()">
+                                                <i class="fas fa-shopping-cart"
+                                                    style="font-size: 20px; color: #462b48;"></i>
+                                            </button></span>
                                     </h6>
                                     {% else %}
-                                    <h6>€{{ product.price }} <span><button
-                                                onclick="handleButtonClick(event, 'addToCart')">Add</button></span></h6>
+                                    <h6>€{{ product.price }} <span>
+                                            <button type="submit" class="btn btn-secondary add-to-cart-btn"
+                                                title="Add to Cart" data-product-id="{{ product.id }}"
+                                                data-product-name="{{ product.name }}"
+                                                data-product-image="{{ product.images.first.image_url }}"
+                                                data-product-quantity="1"
+                                                data-product-price="{% if product.discount_price %}{{ product.discount_price }}{% else %}{{ product.price }}{% endif %}">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        </span></h6>
                                     {% endif %}
                                 </div>
                             </div>
@@ -110,9 +107,12 @@
                 <i class="fas fa-arrow-up"></i> <!-- FontAwesome arrow-up icon -->
             </button>
         </div>
+
     </div>
 </div>
+
 <script src="{% static 'js/breadscrumb.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script>
     // Get the button
     var mybutton = document.getElementById("back-to-top-btn");
@@ -136,36 +136,63 @@
         document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE, and Opera
     }
 </script>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Add an event listener to handle form submissions for all forms with the class "add-to-cart-form"
-        document.querySelectorAll('.add-to-cart-form').forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                event.preventDefault();
 
-                fetch(this.action, {
-                        method: this.method,
-                        body: new FormData(this),
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update the notification badge with the received product_count value
-                        const notificationBadge = this.closest('.card').querySelector(
-                            '.notification-badge');
-                        if (notificationBadge) {
-                            notificationBadge.innerText = data.product_count;
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            });
+<script>
+    // Update the cart count when the "Add to Cart" button is clicked
+    $('.add-to-cart-btn').on('click', function (e) {
+        e.preventDefault();
+
+        // Log the product ID
+        var productId = $(this).data('product-id');
+        console.log('Product ID:', productId);
+
+        // Retrieve other product information
+        var productQuantity = $(this).data('product-quantity');
+
+        // Update the cart count in the navbar
+        updateCartCount(productQuantity);
+
+        // Make the AJAX request to add the product to the cart
+        $.ajax({
+            url: '/add-to-cart/',
+            type: 'POST',
+            data: {
+                'product_id': productId,
+                'quantity': productQuantity,
+            },
+            dataType: 'json',
+            success: function (data) {
+                // Handle success, e.g., update the total and product count in the UI
+                $('#cart-count').text(data.product_count);
+                // Additional logic as needed
+            },
+            error: function (error) {
+                // Handle error
+                console.error('Error adding to cart:', error);
+            }
         });
     });
 
-    function redirectToProductDetail(productId) {
-        // Redirect to the product_detail page
-        window.location.href = `/products/${productId}`;
+    function updateCartCount(quantity) {
+        console.log('Updating cart count');
+
+        // Get the current cart count
+        var currentCount = parseInt($('#cart-count').text());
+
+        // Update the cart count by adding the quantity of the current product
+        var newCount = currentCount + parseInt(quantity);
+
+        // Update the cart count in the navbar
+        $('#cart-count').text(newCount);
     }
+
+    // Redirect to the cart page when the cart icon is clicked
+    $('#cart-icon').on('click', function (e) {
+        e.preventDefault();
+
+        // Redirect to the cart page
+        window.location.href = '/cart/';
+    });
 </script>
 
 {% endblock %}

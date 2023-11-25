@@ -12,13 +12,14 @@ def cart_contents(request):
 
     for item_id, item_data in cart.items():
         if isinstance(item_data, int):
-            cake = get_object_or_404(Product, pk=item_id)
-            total += item_data * cake.price
+            product = get_object_or_404(Product, pk=item_id)
+            total += item_data * product.price
             product_count += item_data
             cart_items.append({
-                'item_id': item_id,
+                'product_id': item_id,  # Add 'product_id' key here
                 'quantity': item_data,
-                'cake': cake,
+                'product': product,
+                'item_total': item_data * product.price,
             })
 
     # Customize delivery logic based on the selected option

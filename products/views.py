@@ -3,6 +3,14 @@ from django.contrib import messages
 from django.db.models import Q, Count
 from django.db.models.functions import Lower
 from .models import Product, Category
+from django.middleware.csrf import get_token
+from django.http import JsonResponse
+from django.views.decorators.http import require_GET
+
+@require_GET
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    return JsonResponse({'csrf_token': csrf_token})
 
 def all_products(request, category_slug=None):
     """ A view to show all products, including sorting and search queries """
@@ -61,9 +69,15 @@ def all_products(request, category_slug=None):
         'selected_category_slug': category_slug,  # Pass the selected category slug for highlighting in the template
         'total_product_count': total_product_count,  
     }
-
     return render(request, 'products/products.html', context)
+    
 def product_detail(request, product_id):
+    # Check if product_id is not empty
+    if not product_id:
+        # Handle the case when product_id is empty
+        # You can redirect the user to an error page or perform any other desired action
+        return HttpResponse("Invalid product ID")
+
     # Retrieve the product using the product_id
     product = get_object_or_404(Product, pk=product_id)
 
