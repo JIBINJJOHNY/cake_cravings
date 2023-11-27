@@ -1,4 +1,4 @@
-# contexts.py
+# cart/contexts.py
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from products.models import Product
@@ -13,27 +13,28 @@ def cart_contents(request):
     for item_id, item_data in cart.items():
         if isinstance(item_data, int):
             product = get_object_or_404(Product, pk=item_id)
-            total += item_data * product.price
+            item_total = item_data * product.price
+            total += item_total
             product_count += item_data
             cart_items.append({
-                'product_id': item_id,  # Add 'product_id' key here
+                'product_id': item_id,
                 'quantity': item_data,
                 'product': product,
-                'item_total': item_data * product.price,
+                'item_total': item_total,
             })
 
-    # Customize delivery logic based on the selected option
-    if selected_delivery_option == 'pickup':
-        delivery = 0
-    elif selected_delivery_option == 'local_delivery':
-        delivery = total * Decimal('0.05')  # 5% of total for local delivery
-    elif selected_delivery_option == 'national_delivery':
-        delivery = total * Decimal('0.1')  # 10% of total for national delivery
-    else:
-        # Default to pickup if the selected option is not recognized
-        delivery = 0
+    delivery_rates = {
+        'pickup': Decimal('0.00'),
+        'local_delivery': Decimal('2.00'),  # Fixed rate for local delivery
+        'national_delivery': Decimal('5.00'),  # Fixed rate for national delivery
+    }
 
-    free_delivery_threshold = Decimal('50.00')  # Free delivery for orders over $50
+    delivery_rate = delivery_rates.get(selected_delivery_option, Decimal('0.00'))
+    delivery = total * delivery_rate
+
+    # Free delivery threshold
+    free_delivery_threshold = Decimal('50.00')  # Free delivery for orders over €50
+
     grand_total = delivery + total
 
     context = {
@@ -45,5 +46,8 @@ def cart_contents(request):
         'grand_total': grand_total,
         'selected_delivery_option': selected_delivery_option,
     }
+
+    if selected_delivery_option == 'local_delivery':
+        context['delivery'] = min(delivery, Decimal('2.00'))
 
     return context
