@@ -30,10 +30,9 @@ class Review(models.Model):
         null=True,
         blank=True,
     )
-    rating = models.CharField(
-        max_length=20,
+    rating = models.IntegerField(
         choices=STAR_CHOICES,
-        default='1',
+        default=1,  
     )
     comment = models.TextField(
         max_length=1000,

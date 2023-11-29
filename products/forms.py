@@ -6,10 +6,3 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = '__all__'
 
-# Assuming you have a Review model
-class ReviewForm(forms.ModelForm):
-    class Meta:
-        
-        fields = ['user', 'comment', 'rating']
-
-

@@ -6,6 +6,8 @@ from .models import Product, Category
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
+from reviews.forms import ReviewForm,UpdateReviewForm
+from reviews.models import Review
 
 @require_GET
 def get_csrf_token(request):
@@ -72,19 +74,23 @@ def all_products(request, category_slug=None):
     return render(request, 'products/products.html', context)
     
 def product_detail(request, product_id):
-    # Check if product_id is not empty
-    if not product_id:
-        # Handle the case when product_id is empty
-        # You can redirect the user to an error page or perform any other desired action
-        return HttpResponse("Invalid product ID")
-
-    # Retrieve the product using the product_id
     product = get_object_or_404(Product, pk=product_id)
+    
+    # Retrieve reviews for the specific product
+    reviews = Review.objects.filter(product=product).order_by('-created_at')
 
-    # You can customize the context data based on your requirements
+    # Create an instance of the ReviewForm
+    review_form = ReviewForm()
+
+    # Create a dictionary to hold instances of UpdateReviewForm for each review
+    update_review_forms = {review.id: UpdateReviewForm(initial={'rating': review.rating, 'comment': review.comment})
+                           for review in reviews}
+
     context = {
         'product': product,
+        'reviews': reviews,
+        'reviewForm': review_form,
+        'updateReviewForms': update_review_forms, 
     }
 
-    # Render the product_detail.html template with the given context
     return render(request, 'products/product_detail.html', context)

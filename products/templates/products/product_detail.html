@@ -177,35 +177,78 @@
     </div>
 </div>
 <!--Review End-->
+
 <script>
-    function changeMainImage(event) {
-        var thumbnail = event.target;
-        if (thumbnail.classList.contains('thumbnail')) {
-            var mainImage = document.getElementById('mainImage');
-            var newImageSource = thumbnail.getAttribute('data-main-image');
-            mainImage.src = newImageSource;
+    document.addEventListener('DOMContentLoaded', function () {
+        function changeMainImage(event) {
+            var thumbnail = event.target;
+            if (thumbnail.classList.contains('thumbnail')) {
+                var mainImage = document.getElementById('mainImage');
+                var newImageSource = thumbnail.getAttribute('data-main-image');
+                mainImage.src = newImageSource;
+            }
         }
-    }
 
-    function updatePrice() {
+        // This script should define sizePrices in the global scope or a scope accessible to updatePrice.
+        var sizePrices = {
+            'S': 30.00,
+            'M': 45.00,
+            'L': 80.00
+        };
+
+        function updatePrice() {
+            var quantityElement = document.getElementById('quantity');
+            var selectedQuantity = parseInt(quantityElement.textContent);
+            var sizeSelect = document.getElementById('product-size');
+            var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
+            var priceElement = document.getElementById('product-price');
+
+            // Handle the size and price logic using sizePrices directly
+            var basePrice = sizePrices[selectedSize];
+
+            if (!isNaN(basePrice)) {
+                var totalPrice = basePrice * selectedQuantity;
+                priceElement.textContent = '€' + totalPrice.toFixed(2);
+            } else {
+                console.log('Invalid base price');
+            }
+        }
+        // Your existing functions for increasing and decreasing quantity
+        function increaseQuantity() {
+            var quantityElement = document.getElementById('quantity');
+            var currentQuantity = parseInt(quantityElement.textContent);
+            quantityElement.textContent = currentQuantity + 1;
+
+            console.log('Increased quantity. New quantity:', currentQuantity + 1);
+            updatePrice(); // Update price when quantity changes
+        }
+
+        function decreaseQuantity() {
+            var quantityElement = document.getElementById('quantity');
+            var currentQuantity = parseInt(quantityElement.textContent);
+
+            if (currentQuantity > 1) {
+                quantityElement.textContent = currentQuantity - 1;
+                updatePrice(); // Update price when quantity changes
+            } else {
+                console.log('Quantity cannot be less than 1');
+            }
+        }
+
+        // Assign functions to global scope
+        window.increaseQuantity = increaseQuantity;
+        window.decreaseQuantity = decreaseQuantity;
+
+        // Event listener for size change
         var sizeSelect = document.getElementById('product-size');
-        var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
-        var priceElement = document.getElementById('product-price');
-
-        // Update the price based on the selected size
-        switch (selectedSize) {
-            case 'S':
-                priceElement.textContent = '€30.00'; // Update with your actual price
-                break;
-            case 'M':
-                priceElement.textContent = '€45.00'; // Update with your actual price
-                break;
-            case 'L':
-                priceElement.textContent = '€80.00'; // Update with your actual price
-                break;
-            default:
-                break;
+        if (sizeSelect) {
+            sizeSelect.addEventListener('change', updatePrice);
+        } else {
+            console.log('Size select element not found');
         }
-    }
+
+        // Initial price update
+        updatePrice();
+    });
 </script>
 {% endblock %}

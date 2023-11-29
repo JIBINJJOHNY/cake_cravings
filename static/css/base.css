@@ -507,3 +507,9 @@ h6 span button:hover {
     object-fit: cover;
     /* Ensure the image covers the container without distortion */
 }
+
+.custom-button {
+    background-color: #462b48;
+    color: #fff;
+    /* Set text color to white or another contrasting color */
+}

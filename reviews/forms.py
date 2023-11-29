@@ -12,6 +12,10 @@ class ReviewForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(ReviewForm, self).__init__(*args, **kwargs)
-        # You can customize the labels, placeholders, etc., if needed
         self.fields['rating'].label = 'Rating'
         self.fields['comment'].label = 'Comment'
+
+
+class UpdateReviewForm(forms.Form):
+    rating = forms.IntegerField()
+    comment = forms.CharField()
