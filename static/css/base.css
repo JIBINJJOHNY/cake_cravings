@@ -453,9 +453,10 @@ h6 span button:hover {
 
 /* Adjust the width as needed */
 .feature img {
-    width: 30px;
+    width: 30%;
     /* Set the desired width */
     margin-bottom: 10px;
+    align-items: center;
 }
 
 /* Hover effect */
@@ -512,4 +513,21 @@ h6 span button:hover {
     background-color: #462b48;
     color: #fff;
     /* Set text color to white or another contrasting color */
+}
+
+/* Add this CSS to your stylesheet or in a style block in your HTML */
+.product-size {
+    display: flex;
+    /* Set the display property to flex */
+    align-items: center;
+    /* Center items vertically */
+}
+
+.product-size img {
+    width: 20%;
+    /* Adjust the width of the images as needed */
+    height: 20%;
+    /* Adjust the height of the images as needed */
+    margin-right: 10px;
+    /* Add spacing between images */
 }

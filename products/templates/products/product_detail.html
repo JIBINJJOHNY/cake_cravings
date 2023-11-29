@@ -42,13 +42,11 @@
             <p class="text-muted">{{ product.description }}</p>
 
             <div class="product-price">
-
                 <span class="current-price text-brand" id="product-price">€{{ product.price }}</span>
                 {% if product.discounted_price %}
                 <span class="save-price font-md color3 ml-3">{{ product.discount_percentage }} Off</span>
                 <span class="old-price font-md ml-3">€{{ product.discounted_price }}</span>
                 {% endif %}
-
             </div>
 
             <div class="product-detail-rating mt-3">
@@ -75,6 +73,7 @@
                 <img src="{% static 'images/large.png' %}" alt="large cake icon">
             </div>
             {% endif %}
+
             <div class="detail-extralink mt-4">
                 <div class="detail-qty radius">
                     <span class="quantity-label">Quantity:</span>
@@ -177,7 +176,6 @@
     </div>
 </div>
 <!--Review End-->
-
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         function changeMainImage(event) {
@@ -189,7 +187,6 @@
             }
         }
 
-        // This script should define sizePrices in the global scope or a scope accessible to updatePrice.
         var sizePrices = {
             'S': 30.00,
             'M': 45.00,
@@ -203,7 +200,6 @@
             var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
             var priceElement = document.getElementById('product-price');
 
-            // Handle the size and price logic using sizePrices directly
             var basePrice = sizePrices[selectedSize];
 
             if (!isNaN(basePrice)) {
@@ -213,14 +209,14 @@
                 console.log('Invalid base price');
             }
         }
-        // Your existing functions for increasing and decreasing quantity
+
+        window.updatePrice = updatePrice; // Added this line to make updatePrice globally accessible
+
         function increaseQuantity() {
             var quantityElement = document.getElementById('quantity');
             var currentQuantity = parseInt(quantityElement.textContent);
             quantityElement.textContent = currentQuantity + 1;
-
-            console.log('Increased quantity. New quantity:', currentQuantity + 1);
-            updatePrice(); // Update price when quantity changes
+            updatePrice();
         }
 
         function decreaseQuantity() {
@@ -229,17 +225,16 @@
 
             if (currentQuantity > 1) {
                 quantityElement.textContent = currentQuantity - 1;
-                updatePrice(); // Update price when quantity changes
+                updatePrice();
             } else {
                 console.log('Quantity cannot be less than 1');
             }
         }
 
-        // Assign functions to global scope
+        window.changeMainImage = changeMainImage;
         window.increaseQuantity = increaseQuantity;
         window.decreaseQuantity = decreaseQuantity;
 
-        // Event listener for size change
         var sizeSelect = document.getElementById('product-size');
         if (sizeSelect) {
             sizeSelect.addEventListener('change', updatePrice);
@@ -247,8 +242,9 @@
             console.log('Size select element not found');
         }
 
-        // Initial price update
-        updatePrice();
+        updatePrice(); // Initial price update
     });
 </script>
+
+
 {% endblock %}
