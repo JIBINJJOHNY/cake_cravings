@@ -72,7 +72,6 @@ def all_products(request, category_slug=None):
         'total_product_count': total_product_count,  
     }
     return render(request, 'products/products.html', context)
-    
 def product_detail(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
     
@@ -86,11 +85,15 @@ def product_detail(request, product_id):
     update_review_forms = {review.id: UpdateReviewForm(initial={'rating': review.rating, 'comment': review.comment})
                            for review in reviews}
 
+    if request.method == 'POST':
+        # Call the add_to_cart function from the cart app
+        add_to_cart(request, product_id)
+
     context = {
         'product': product,
         'reviews': reviews,
         'reviewForm': review_form,
-        'updateReviewForms': update_review_forms, 
+        'updateReviewForms': update_review_forms,
     }
 
     return render(request, 'products/product_detail.html', context)

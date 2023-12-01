@@ -23,14 +23,16 @@
                             <!-- Main Image -->
                             <div class="main-image">
                                 <!-- Inside your template where you display the product image -->
-                                {% if product.images.first.image_url %}
-                                <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
-                                    class="img-fluid mt-4" id="mainImage">
-                                {% else %}
-                                <img src="{% static 'images/noimage.png' %}" alt="{{ product.name }}"
-                                    class="img-fluid mt-4" id="mainImage">
-                                {% endif %}
-
+                                <!-- Main Image -->
+                                <div class="main-image">
+                                    {% if product.images.first.image_url %}
+                                    <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
+                                        class="img-fluid mt-4" id="mainImage">
+                                    {% else %}
+                                    <img src="{% static 'images/default_image.png' %}" alt="{{ product.name }}"
+                                        class="img-fluid mt-4" id="mainImage">
+                                    {% endif %}
+                                </div>
                             </div>
                             <!-- Thumbnails -->
                             <div class="thumbnails" onclick="changeMainImage(event)">
@@ -89,14 +91,16 @@
                 </div>
                 <div class="product-extra-link2 mt-3">
                     <!-- Update the form with a unique ID -->
-
-                    <form id="addToCartForm" class="form" action="{% url 'cart:add_to_cart' %}" method="POST">
+                    <form method="post" action="{% url 'cart:add_to_cart' item_id=product.id %}" id="addToCartForm"
+                        class="add-to-cart">
                         {% csrf_token %}
                         <input type="hidden" name="product_id" value="{{ product.id }}">
                         <input type="hidden" name="quantity" id="cartQuantity" value="1">
+                        <!-- This line is important -->
                         <input type="hidden" name="title" value="{{ product.name }}">
                         <input type="hidden" name="price" value="{{ product.price }}">
-                        <button type="submit" class="btn btn-success custom-class" id="addToCartBtn">
+                        <button type="button" class="btn btn-success custom-class" id="addToCartBtn"
+                            onclick="addToCart()">
                             <i class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
                         <a aria-label="Add To Wishlist" class="btn ml-2 wishlist-button" onclick="addToWishlist()"
@@ -104,7 +108,6 @@
                             <i class="fas fa-heart" style="color: red;"></i>
                         </a>
                     </form>
-
                 </div>
             </div>
         </div>
@@ -191,107 +194,141 @@
         </div>
     </div>
 </div>
-<div id="cartContent"></div>
 
 <!--Review End-->
-<!-- Include jQuery library -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<!-- Include your cart.js script after jQuery -->
-<script src="{% static 'js/cart.js' %}"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        function changeMainImage(event) {
-            var thumbnail = event.target;
-            if (thumbnail.classList.contains('thumbnail')) {
-                var mainImage = document.getElementById('mainImage');
-                var newImageSource = thumbnail.getAttribute('data-main-image');
-                mainImage.src = newImageSource;
-            }
+    function changeMainImage(event) {
+        var thumbnail = event.target;
+        if (thumbnail.classList.contains('thumbnail')) {
+            var mainImage = document.getElementById('mainImage');
+            var newImageSource = thumbnail.getAttribute('data-main-image');
+            mainImage.src = newImageSource;
         }
+    }
 
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('Script loaded');
 
-            var sizeSelect = document.getElementById('product-size');
+
+    function updatePrice() {
+        var quantityElement = document.getElementById('quantity');
+        var selectedQuantity = parseInt(quantityElement.textContent);
+        var sizeSelect = document.getElementById('product-size');
+        var priceElement = document.getElementById('product-price');
+
+        // Get the product's base price from the HTML element
+        var basePrice = parseFloat(priceElement.getAttribute('data-product-price'));
+
+        if (!isNaN(basePrice)) {
+            // If the product has a size option, get the selected size and its price
             if (sizeSelect) {
                 console.log('Size select element found');
-                sizeSelect.addEventListener('change', updatePrice);
-            } else {
-                console.error('Size select element not found');
-            }
+                var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
+                var sizePrices = {
+                    'S': 30.00,
+                    'M': 45.00,
+                    'L': 80.00
+                };
 
-            updatePrice(); // Initial price update
-        });
-
-
-        function updatePrice() {
-            var quantityElement = document.getElementById('quantity');
-            var selectedQuantity = parseInt(quantityElement.textContent);
-            var sizeSelect = document.getElementById('product-size');
-            var priceElement = document.getElementById('product-price');
-
-            // Get the product's base price from the HTML element
-            var basePrice = parseFloat(priceElement.getAttribute('data-product-price'));
-
-            if (!isNaN(basePrice)) {
-                // If the product has a size option, get the selected size and its price
-                if (sizeSelect) {
-                    console.log('Size select element found');
-                    var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
-                    var sizePrices = {
-                        'S': 30.00,
-                        'M': 45.00,
-                        'L': 80.00
-                    };
-
-                    // Check if the selected size has a price defined
-                    if (sizePrices.hasOwnProperty(selectedSize)) {
-                        basePrice = sizePrices[selectedSize];
-                    } else {
-                        console.log('Invalid size-specific price for selected size:', selectedSize);
-                    }
+                // Check if the selected size has a price defined
+                if (sizePrices.hasOwnProperty(selectedSize)) {
+                    basePrice = sizePrices[selectedSize];
+                } else {
+                    console.log('Invalid size-specific price for selected size:', selectedSize);
                 }
-
-                var totalPrice = basePrice * selectedQuantity;
-                priceElement.textContent = '€' + totalPrice.toFixed(2);
-            } else {
-                console.log('Invalid product-specific price');
             }
-        }
 
-        window.updatePrice = updatePrice; // Added this line to make updatePrice globally accessible
-
-        function increaseQuantity() {
-            var quantityElement = document.getElementById('quantity');
-            var currentQuantity = parseInt(quantityElement.textContent);
-            quantityElement.textContent = currentQuantity + 1;
-            updatePrice();
-        }
-
-        function decreaseQuantity() {
-            var quantityElement = document.getElementById('quantity');
-            var currentQuantity = parseInt(quantityElement.textContent);
-
-            if (currentQuantity > 1) {
-                quantityElement.textContent = currentQuantity - 1;
-                updatePrice();
-            } else {
-                console.log('Quantity cannot be less than 1');
-            }
-        }
-
-        window.changeMainImage = changeMainImage;
-        window.increaseQuantity = increaseQuantity;
-        window.decreaseQuantity = decreaseQuantity;
-
-        var sizeSelect = document.getElementById('product-size');
-        if (sizeSelect) {
-            sizeSelect.addEventListener('change', updatePrice);
+            var totalPrice = basePrice * selectedQuantity;
+            priceElement.textContent = '€' + totalPrice.toFixed(2);
         } else {
-            console.log('Size select element not found');
+            console.log('Invalid product-specific price');
         }
+    }
 
-        updatePrice(); // Initial price update
-    });
+    window.updatePrice = updatePrice;
+
+    function increaseQuantity() {
+        var quantityElement = document.getElementById('quantity');
+        var currentQuantity = parseInt(quantityElement.textContent);
+        quantityElement.textContent = currentQuantity + 1;
+
+        console.log('Updated quantity:', quantityElement.textContent);
+
+        window.updatePrice();
+    }
+
+    function decreaseQuantity() {
+        var quantityElement = document.getElementById('quantity');
+        var currentQuantity = parseInt(quantityElement.textContent);
+
+        if (currentQuantity > 1) {
+            quantityElement.textContent = currentQuantity - 1;
+
+            console.log('Updated quantity:', quantityElement.textContent);
+
+            window.updatePrice();
+        } else {
+            console.log('Quantity cannot be less than 1');
+        }
+    }
+    // Add this function definition before your other JavaScript code
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function addToCart() {
+        var productId = document.querySelector('input[name="product_id"]').value;
+        var quantity = document.getElementById('quantity').textContent;
+
+        var addToCartUrl = "/add_to_cart/" + productId + "/";
+        console.log('addToCartUrl:', addToCartUrl);
+
+        fetch(addToCartUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: JSON.stringify({
+                    'quantity': quantity,
+                }),
+            })
+
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Added to cart:', data);
+                // Update the cart display or perform other actions as needed
+                updateMiniCart();
+            })
+            .catch(error => {
+                console.error('Error adding to cart:', error);
+                // Handle the error gracefully (e.g., display an error message to the user)
+                alert('Error adding to cart. Please try again.');
+            });
+    }
+
+
+    // Function to update the mini-cart (replace this with your actual function)
+    function updateMiniCart() {
+        console.log('Updating mini-cart...');
+        // Your logic to update the mini-cart goes here
+    }
 </script>
+
+
 {% endblock %}

@@ -1,89 +1,121 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.template.loader import render_to_string
-from .contexts import cart_contents
+from django.http import JsonResponse 
+from django.shortcuts import render, redirect, reverse, HttpResponse, get_object_or_404
+from django.contrib import messages
 from products.models import Product
-from django.http import JsonResponse
-
-def add_to_cart(request):
-    if request.method == 'POST':
-        # Access form data, including the image
-        product_id = request.POST.get('product_id')
-        quantity = request.POST.get('quantity')
-
-        # Retrieve the product from the database
-        product = get_object_or_404(Product, id=product_id)
-
-        # Your existing logic for processing the form data
-        image_url = product.images.first().image_url if product.images.exists() else None
-        print('Image URL:', image_url)  # Log image_url to the console
-
-        cart_p = {
-            str(product_id): {
-                'image': image_url,
-                'title': request.POST.get('title'),
-                'qty': quantity,
-                'price': request.POST.get('price'),
-            }
-        }
-
-        if 'cartdata' in request.session:
-            if str(product_id) in request.session['cartdata']:
-                cart_data = request.session['cartdata']
-                cart_data[str(product_id)]['qty'] = int(cart_p[str(product_id)]['qty'])
-                cart_data.update(cart_data)
-                request.session['cartdata'] = cart_data
-            else:
-                cart_data = request.session['cartdata']
-                cart_data.update(cart_p)
-                request.session['cartdata'] = cart_data
-        else:
-            request.session['cartdata'] = cart_p
-
-        return JsonResponse({'data': request.session['cartdata'], 'totalitems': len(request.session['cartdata'])})
-
+from .contexts import cart_contents
 
 def view_cart(request):
+    """ A view that renders the cart contents page """
     context = cart_contents(request)
     return render(request, 'cart/cart.html', context)
 
-def delete_cart_item(request):
-    p_id = str(request.GET['id'])
-    if 'cartdata' in request.session:
-        if p_id in request.session['cartdata']:
-            cart_data = request.session['cartdata']
-            del request.session['cartdata'][p_id]
-            request.session['cartdata'] = cart_data
+def add_to_cart(request, item_id):
+    """ Add a quantity of the specified product to the cart """
+    product = get_object_or_404(Product, pk=item_id)
+    quantity = int(request.POST.get('quantity'))
+    size = None
 
-    total_amt = 0
-    for p_id, item in request.session['cartdata'].items():
-        total_amt += int(item['qty']) * float(item['price'])
+    # Assuming you have a form element named 'product_size'
+    if 'product_size' in request.POST:
+        size = request.POST['product_size']
 
-    t = render_to_string('ajax/cart-list.html', {'cart_data': request.session['cartdata'], 'totalitems': len(request.session['cartdata']), 'total_amt': total_amt})
-    return JsonResponse({'data': t, 'totalitems': len(request.session['cartdata'])})
+    cart = request.session.get('cake_cravings_cart', {})
 
-def update_cart_item(request):
-    p_id = str(request.GET['id'])
-    p_qty = request.GET['qty']
-
-    if 'cartdata' in request.session:
-        if p_id in request.session['cartdata']:
-            cart_data = request.session['cartdata']
-            cart_data[str(request.GET['id'])]['qty'] = p_qty
-            request.session['cartdata'] = cart_data
-
-    total_amt = 0
-    for p_id, item in request.session['cartdata'].items():
-        total_amt += int(item['qty']) * float(item['price'])
-
-    t = render_to_string('ajax/cart-list.html', {'cart_data': request.session['cartdata'], 'totalitems': len(request.session['cartdata']), 'total_amt': total_amt})
-    return JsonResponse({'data': t, 'totalitems': len(request.session['cartdata'])})
-
-
-def get_cart_count(request):
-    if 'cartdata' in request.session:
-        cart_count = len(request.session['cartdata'])
+    if size:
+        if item_id in cart:
+            if size in cart[item_id]['items_by_size']:
+                cart[item_id]['items_by_size'][size] += quantity
+                messages.success(request, f'Updated size {size.upper()} {product.name} quantity to {cart[item_id]["items_by_size"][size]}')
+            else:
+                cart[item_id]['items_by_size'][size] = quantity
+                messages.success(request, f'Added size {size.upper()} {product.name} to your cart')
+        else:
+            cart[item_id] = {'items_by_size': {size: quantity}}
+            messages.success(request, f'Added size {size.upper()} {product.name} to your cart')
     else:
-        cart_count = 0
+        if item_id in cart:
+            cart[item_id] += quantity
+            messages.success(request, f'Updated {product.name} quantity to {cart[item_id]}')
+        else:
+            cart[item_id] = quantity
+            messages.success(request, f'Added {product.name} to your cart')
 
-    return JsonResponse({'cart_count': cart_count})
+    request.session['cake_cravings_cart'] = cart
+
+    # Redirect to the cart view after updating the cart
+    return redirect(reverse('view_cart'))
+
+def update_cart(request, item_id):
+    """ Update the quantity of the specified product in the cart """
+
+    product = get_object_or_404(Product, pk=item_id)
+    quantity = int(request.POST.get('quantity'))
+    size = None
+
+    # Assuming you have a form element named 'product_size'
+    if 'product_size' in request.POST:
+        size = request.POST['product_size']
+
+    cart = request.session.get('cake_cravings_cart', {})
+
+    if size:
+        if quantity > 0:
+            cart[item_id]['items_by_size'][size] = quantity
+            messages.success(request, f'Updated size {size.upper()} {product.name} quantity to {cart[item_id]["items_by_size"][size]}')
+        else:
+            del cart[item_id]['items_by_size'][size]
+            if not cart[item_id]['items_by_size']:
+                cart.pop(item_id)
+            messages.success(request, f'Removed size {size.upper()} {product.name} from your cart')
+    else:
+        if quantity > 0:
+            cart[item_id] = quantity
+            messages.success(request, f'Updated {product.name} quantity to {cart[item_id]}')
+        else:
+            cart.pop(item_id)
+            messages.success(request, f'Removed {product.name} from your cart')
+
+    request.session['cake_cravings_cart'] = cart
+    return redirect(reverse('view_cart'))
+
+def remove_from_cart(request, item_id):
+    """ Remove the item from the cart """
+
+    try:
+        product = get_object_or_404(Product, pk=item_id)
+        size = None
+
+        # Assuming you have a form element named 'product_size'
+        if 'product_size' in request.POST:
+            size = request.POST['product_size']
+
+        cart = request.session.get('cake_cravings_cart', {})
+
+        if size:
+            del cart[item_id]['items_by_size'][size]
+            if not cart[item_id]['items_by_size']:
+                cart.pop(item_id)
+            messages.success(request, f'Removed size {size.upper()} {product.name} from your cart')
+        else:
+            cart.pop(item_id)
+            messages.success(request, f'Removed {product.name} from your cart')
+
+        request.session['cake_cravings_cart'] = cart
+        return HttpResponse(status=200)
+
+    except Exception as e:
+        messages.error(request, f'Error removing item: {e}')
+        return HttpResponse(status=500)
+def update_delivery_option(request):
+    """
+    View to update the selected delivery option.
+    """
+    if request.method == 'POST':
+        selected_delivery_option = request.POST.get('delivery_option')
+        request.session['delivery_option'] = selected_delivery_option
+        context = cart_contents(request)
+        return render(request, 'cart/cart.html', context)
+    else:
+        # Handle non-POST requests or redirect as needed
+        # You can customize this based on your requirements
+        return render(request, 'cart/cart.html', {})

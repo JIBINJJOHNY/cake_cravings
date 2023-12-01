@@ -220,10 +220,11 @@ class ProductImage(models.Model):
     def get_not_active_product_images(cls):
         return cls.objects.filter(is_active=False)
 
-    def save(self, *args, **kwargs):
-        if self.default_image:
-            for image in self.product.images.all().exclude(id=self.id):
-                image.default_image = False
-                image.save()
+def save(self, *args, **kwargs):
+    if self.default_image:
+        for image in self.product.images.all().exclude(id=self.id):
+            image.default_image = False
+            image.save()
 
-        super().save(*args, **kwargs)
+    super().save(*args, **kwargs)
+

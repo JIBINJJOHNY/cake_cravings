@@ -23,35 +23,29 @@ def cart_contents(request):
                 'item_total': item_total,
             })
 
-    # Set delivery percentage based on the selected delivery option
+    # Set delivery cost based on the selected delivery option
     if selected_delivery_option == 'local_delivery':
-        delivery_percentage = Decimal(10 / 100)  # Use 10% for local delivery
+        delivery_cost = min(Decimal('2.00'), total * Decimal(10 / 100))  # Minimum €2.00 or 10% of total
     elif selected_delivery_option == 'national_delivery':
-        delivery_percentage = Decimal(20 / 100)  # Use 20% for national delivery
+        delivery_cost = Decimal('5.00')  # Fixed €5.00 for national delivery
     else:
-        # Default to a standard percentage if the delivery option is not recognized
-        delivery_percentage = Decimal(0) 
+        delivery_cost = Decimal('0.00')  # No delivery cost for pickup
 
     if total < settings.FREE_DELIVERY_THRESHOLD:
-        delivery = total * delivery_percentage
         free_delivery_delta = settings.FREE_DELIVERY_THRESHOLD - total
     else:
-        delivery = 0
         free_delivery_delta = 0
 
-    grand_total = delivery + total
+    grand_total = delivery_cost + total
 
     context = {
         'cart_items': cart_items,
         'total': total,
         'product_count': product_count,
-        'delivery': delivery,
+        'delivery': delivery_cost,
         'free_delivery_threshold': settings.FREE_DELIVERY_THRESHOLD,
         'grand_total': grand_total,
         'selected_delivery_option': selected_delivery_option,
     }
-
-    if selected_delivery_option == 'local_delivery':
-        context['delivery'] = min(delivery, Decimal('2.00'))
 
     return context
