@@ -131,13 +131,13 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     discount_price = models.ForeignKey(Discount, on_delete=models.SET_NULL, null=True, blank=True)
     availability = models.CharField(max_length=20, choices=AVAILABILITY_CHOICES, default='in_stock')
-    size = models.CharField(max_length=5, choices=SIZE_CHOICES, default='S')
+    size = models.CharField(max_length=5, choices=SIZE_CHOICES, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name, allow_unicode=True)
 
         # Only adjust price based on size if the category is 'cakes'
-        if self.category.name.lower() == 'cakes':
+        if self.category.name.lower() == 'cakes' and self.size:
             if self.size == 'S':
                 self.price = Decimal('30.0')
             elif self.size == 'M':

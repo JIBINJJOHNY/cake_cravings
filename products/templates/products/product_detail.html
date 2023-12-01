@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-
+<script>
+    // Set the base URL for static files
+    window.staticBaseUrl = "{% get_static_prefix %}";
+</script>
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-6">
@@ -19,8 +22,15 @@
                         <div class="image-gallery">
                             <!-- Main Image -->
                             <div class="main-image">
+                                <!-- Inside your template where you display the product image -->
+                                {% if product.images.first.image_url %}
                                 <img src="{{ product.images.first.image_url }}" alt="{{ product.name }}"
                                     class="img-fluid mt-4" id="mainImage">
+                                {% else %}
+                                <img src="{% static 'images/noimage.png' %}" alt="{{ product.name }}"
+                                    class="img-fluid mt-4" id="mainImage">
+                                {% endif %}
+
                             </div>
                             <!-- Thumbnails -->
                             <div class="thumbnails" onclick="changeMainImage(event)">
@@ -42,23 +52,19 @@
             <p class="text-muted">{{ product.description }}</p>
 
             <div class="product-price">
-                <span class="current-price text-brand" id="product-price">€{{ product.price }}</span>
+                <span class="current-price text-brand" id="product-price"
+                    data-product-price="{{ product.price }}">€{{ product.price }}</span>
                 {% if product.discounted_price %}
                 <span class="save-price font-md color3 ml-3">{{ product.discount_percentage }} Off</span>
                 <span class="old-price font-md ml-3">€{{ product.discounted_price }}</span>
                 {% endif %}
             </div>
 
-            <div class="product-detail-rating mt-3">
-                <div class="product-rate-cover text-end">
-                    <div class="product-rate d-inline-block">
-                        <!-- Placeholder for product rating -->
-                        Rating: {{ product.rating }}
-                    </div>
-                    <span class="font-small ml-2 text-muted"> ({{ product.num_reviews }} reviews)</span>
-                </div>
-            </div>
-
+            {% if product.rating %} <small class="text-muted"><i class="fas fa-star mr-1"></i>{{ product.rating }} /
+                5</small>
+            {% else %}
+            <small class="text-muted">No Rating</small>
+            {% endif %}
             {% if product.category.name|lower == 'cakes' %}
             <!-- Size Option for Cakes -->
             <div class="product-size mt-3">
@@ -82,13 +88,23 @@
                     <button class="quantity-button" onclick="increaseQuantity()">+</button>
                 </div>
                 <div class="product-extra-link2 mt-3">
-                    <button class="btn btn-success" onclick="addToCart()">
-                        <i class="fas fa-shopping-cart"></i> Add to Cart
-                    </button>
-                    <a aria-label="Add To Wishlist" class="btn ml-2 wishlist-button" onclick="addToWishlist()" href="#"
-                        style="border: 1px solid black;">
-                        <i class="fas fa-heart" style="color: red;"></i>
-                    </a>
+                    <!-- Update the form with a unique ID -->
+
+                    <form id="addToCartForm" class="form" action="{% url 'cart:add_to_cart' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <input type="hidden" name="quantity" id="cartQuantity" value="1">
+                        <input type="hidden" name="title" value="{{ product.name }}">
+                        <input type="hidden" name="price" value="{{ product.price }}">
+                        <button type="submit" class="btn btn-success custom-class" id="addToCartBtn">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <a aria-label="Add To Wishlist" class="btn ml-2 wishlist-button" onclick="addToWishlist()"
+                            href="#" style="border: 1px solid black;">
+                            <i class="fas fa-heart" style="color: red;"></i>
+                        </a>
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -175,7 +191,13 @@
         </div>
     </div>
 </div>
+<div id="cartContent"></div>
+
 <!--Review End-->
+<!-- Include jQuery library -->
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<!-- Include your cart.js script after jQuery -->
+<script src="{% static 'js/cart.js' %}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         function changeMainImage(event) {
@@ -187,26 +209,53 @@
             }
         }
 
-        var sizePrices = {
-            'S': 30.00,
-            'M': 45.00,
-            'L': 80.00
-        };
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Script loaded');
+
+            var sizeSelect = document.getElementById('product-size');
+            if (sizeSelect) {
+                console.log('Size select element found');
+                sizeSelect.addEventListener('change', updatePrice);
+            } else {
+                console.error('Size select element not found');
+            }
+
+            updatePrice(); // Initial price update
+        });
+
 
         function updatePrice() {
             var quantityElement = document.getElementById('quantity');
             var selectedQuantity = parseInt(quantityElement.textContent);
             var sizeSelect = document.getElementById('product-size');
-            var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
             var priceElement = document.getElementById('product-price');
 
-            var basePrice = sizePrices[selectedSize];
+            // Get the product's base price from the HTML element
+            var basePrice = parseFloat(priceElement.getAttribute('data-product-price'));
 
             if (!isNaN(basePrice)) {
+                // If the product has a size option, get the selected size and its price
+                if (sizeSelect) {
+                    console.log('Size select element found');
+                    var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value;
+                    var sizePrices = {
+                        'S': 30.00,
+                        'M': 45.00,
+                        'L': 80.00
+                    };
+
+                    // Check if the selected size has a price defined
+                    if (sizePrices.hasOwnProperty(selectedSize)) {
+                        basePrice = sizePrices[selectedSize];
+                    } else {
+                        console.log('Invalid size-specific price for selected size:', selectedSize);
+                    }
+                }
+
                 var totalPrice = basePrice * selectedQuantity;
                 priceElement.textContent = '€' + totalPrice.toFixed(2);
             } else {
-                console.log('Invalid base price');
+                console.log('Invalid product-specific price');
             }
         }
 
@@ -245,6 +294,4 @@
         updatePrice(); // Initial price update
     });
 </script>
-
-
 {% endblock %}

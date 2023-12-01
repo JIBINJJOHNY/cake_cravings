@@ -191,3 +191,6 @@ GRAPH_MODELS = {
 }
 
 django_heroku.settings(locals())
+
+# Stripe
+FREE_DELIVERY_THRESHOLD = 60

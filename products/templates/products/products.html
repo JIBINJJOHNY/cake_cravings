@@ -91,7 +91,7 @@
                                     </h6>
                                     {% else %}
                                     <h6>€{{ product.price }} <span>
-                                            <form method="POST" action="{% url 'add_to_cart' product_id=product.id %}">
+                                            <form method="POST" action="#">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="quantity" value="1">
                                                 <button type="submit" class="btn btn-secondary" title="Add to Cart">

@@ -1,6 +1,6 @@
-# cart/contexts.py
 from decimal import Decimal
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 from products.models import Product
 
 def cart_contents(request):
@@ -23,17 +23,21 @@ def cart_contents(request):
                 'item_total': item_total,
             })
 
-    delivery_rates = {
-        'pickup': Decimal('0.00'),
-        'local_delivery': Decimal('2.00'),  # Fixed rate for local delivery
-        'national_delivery': Decimal('5.00'),  # Fixed rate for national delivery
-    }
+    # Set delivery percentage based on the selected delivery option
+    if selected_delivery_option == 'local_delivery':
+        delivery_percentage = Decimal(10 / 100)  # Use 10% for local delivery
+    elif selected_delivery_option == 'national_delivery':
+        delivery_percentage = Decimal(20 / 100)  # Use 20% for national delivery
+    else:
+        # Default to a standard percentage if the delivery option is not recognized
+        delivery_percentage = Decimal(0) 
 
-    delivery_rate = delivery_rates.get(selected_delivery_option, Decimal('0.00'))
-    delivery = total * delivery_rate
-
-    # Free delivery threshold
-    free_delivery_threshold = Decimal('50.00')  # Free delivery for orders over €50
+    if total < settings.FREE_DELIVERY_THRESHOLD:
+        delivery = total * delivery_percentage
+        free_delivery_delta = settings.FREE_DELIVERY_THRESHOLD - total
+    else:
+        delivery = 0
+        free_delivery_delta = 0
 
     grand_total = delivery + total
 
@@ -42,7 +46,7 @@ def cart_contents(request):
         'total': total,
         'product_count': product_count,
         'delivery': delivery,
-        'free_delivery_threshold': free_delivery_threshold,
+        'free_delivery_threshold': settings.FREE_DELIVERY_THRESHOLD,
         'grand_total': grand_total,
         'selected_delivery_option': selected_delivery_option,
     }

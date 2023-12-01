@@ -1,54 +1,89 @@
-# cart/views.py
-from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.contrib import messages
-from products.models import Product
-from .contexts import cart_contents
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-from decimal import Decimal
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
+from django.template.loader import render_to_string
+from .contexts import cart_contents
+from products.models import Product
+from django.http import JsonResponse
+
+def add_to_cart(request):
+    if request.method == 'POST':
+        # Access form data, including the image
+        product_id = request.POST.get('product_id')
+        quantity = request.POST.get('quantity')
+
+        # Retrieve the product from the database
+        product = get_object_or_404(Product, id=product_id)
+
+        # Your existing logic for processing the form data
+        image_url = product.images.first().image_url if product.images.exists() else None
+        print('Image URL:', image_url)  # Log image_url to the console
+
+        cart_p = {
+            str(product_id): {
+                'image': image_url,
+                'title': request.POST.get('title'),
+                'qty': quantity,
+                'price': request.POST.get('price'),
+            }
+        }
+
+        if 'cartdata' in request.session:
+            if str(product_id) in request.session['cartdata']:
+                cart_data = request.session['cartdata']
+                cart_data[str(product_id)]['qty'] = int(cart_p[str(product_id)]['qty'])
+                cart_data.update(cart_data)
+                request.session['cartdata'] = cart_data
+            else:
+                cart_data = request.session['cartdata']
+                cart_data.update(cart_p)
+                request.session['cartdata'] = cart_data
+        else:
+            request.session['cartdata'] = cart_p
+
+        return JsonResponse({'data': request.session['cartdata'], 'totalitems': len(request.session['cartdata'])})
+
 
 def view_cart(request):
     context = cart_contents(request)
     return render(request, 'cart/cart.html', context)
 
-def add_to_cart(request, product_id):
-    product = get_object_or_404(Product, pk=product_id)
-    quantity = int(request.POST.get('quantity', 1))
-    
-    cart = request.session.get('cake_cravings_cart', {})
+def delete_cart_item(request):
+    p_id = str(request.GET['id'])
+    if 'cartdata' in request.session:
+        if p_id in request.session['cartdata']:
+            cart_data = request.session['cartdata']
+            del request.session['cartdata'][p_id]
+            request.session['cartdata'] = cart_data
 
-    if product_id in cart:
-        cart[product_id] += quantity
-        messages.success(request, f'Updated {product.name} quantity to {cart[product_id]}')
+    total_amt = 0
+    for p_id, item in request.session['cartdata'].items():
+        total_amt += int(item['qty']) * float(item['price'])
+
+    t = render_to_string('ajax/cart-list.html', {'cart_data': request.session['cartdata'], 'totalitems': len(request.session['cartdata']), 'total_amt': total_amt})
+    return JsonResponse({'data': t, 'totalitems': len(request.session['cartdata'])})
+
+def update_cart_item(request):
+    p_id = str(request.GET['id'])
+    p_qty = request.GET['qty']
+
+    if 'cartdata' in request.session:
+        if p_id in request.session['cartdata']:
+            cart_data = request.session['cartdata']
+            cart_data[str(request.GET['id'])]['qty'] = p_qty
+            request.session['cartdata'] = cart_data
+
+    total_amt = 0
+    for p_id, item in request.session['cartdata'].items():
+        total_amt += int(item['qty']) * float(item['price'])
+
+    t = render_to_string('ajax/cart-list.html', {'cart_data': request.session['cartdata'], 'totalitems': len(request.session['cartdata']), 'total_amt': total_amt})
+    return JsonResponse({'data': t, 'totalitems': len(request.session['cartdata'])})
+
+
+def get_cart_count(request):
+    if 'cartdata' in request.session:
+        cart_count = len(request.session['cartdata'])
     else:
-        cart[product_id] = quantity
-        messages.success(request, f'Added {product.name} to your cart')
+        cart_count = 0
 
-    request.session['cake_cravings_cart'] = cart
-    return redirect(reverse('view_cart'))
-
-def remove_from_cart(request, product_id):
-    cart = request.session.get('cake_cravings_cart', {})
-    
-    if str(product_id) in cart:
-        del cart[str(product_id)]
-        request.session['cake_cravings_cart'] = cart
-    
-    return redirect('view_cart')
-
-def update_delivery_option(request):
-    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        selected_option = request.POST.get('selected_delivery_option')
-        request.session['delivery_option'] = selected_option
-
-        cart_context = cart_contents(request)
-
-        response_data = {
-            'delivery': '{:.2f}'.format(cart_context['delivery']),
-            'grand_total': '{:.2f}'.format(cart_context['grand_total']),
-        }
-
-        return JsonResponse(response_data)
-
-    return JsonResponse({'error': 'Invalid request'})
+    return JsonResponse({'cart_count': cart_count})
