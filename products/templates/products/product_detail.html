@@ -91,18 +91,18 @@
                 </div>
                 <div class="product-extra-link2 mt-3">
                     <!-- Update the form with a unique ID -->
-                    <form method="post" action="{% url 'cart:add_to_cart' item_id=product.id %}" id="addToCartForm"
-                        class="add-to-cart">
+                    <form method="post" action="{% url 'cart:add_to_cart' %}" id="addToCartForm" class="add-to-cart">
                         {% csrf_token %}
                         <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <input type="hidden" name="quantity" id="cartQuantity" value="1">
+                        <input type="hidden" name="quantity" value="1">
                         <!-- This line is important -->
                         <input type="hidden" name="title" value="{{ product.name }}">
                         <input type="hidden" name="price" value="{{ product.price }}">
-                        <button type="button" class="btn btn-success custom-class" id="addToCartBtn"
-                            onclick="addToCart()">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        <!-- form fields -->
+                        <button type="submit" class="btn btn-success custom-class" id="addToCartBtn"><i
+                                class="fas fa-shopping-cart"></i> Add to Cart
                         </button>
+
                         <a aria-label="Add To Wishlist" class="btn ml-2 wishlist-button" onclick="addToWishlist()"
                             href="#" style="border: 1px solid black;">
                             <i class="fas fa-heart" style="color: red;"></i>
@@ -286,13 +286,17 @@
         return cookieValue;
     }
 
+    function updateMiniCart() {
+        console.log('Updating mini-cart...');
+        // Your logic to update the mini-cart goes here
+    }
+
     function addToCart() {
+
         var productId = document.querySelector('input[name="product_id"]').value;
         var quantity = document.getElementById('quantity').textContent;
 
-        var addToCartUrl = "/add_to_cart/" + productId + "/";
-        console.log('addToCartUrl:', addToCartUrl);
-
+        var addToCartUrl = "{% url 'cart:add_to_cart' %}";
         fetch(addToCartUrl, {
                 method: 'POST',
                 headers: {
@@ -303,13 +307,7 @@
                     'quantity': quantity,
                 }),
             })
-
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.text()) // Change this line
             .then(data => {
                 console.log('Added to cart:', data);
                 // Update the cart display or perform other actions as needed
@@ -317,16 +315,8 @@
             })
             .catch(error => {
                 console.error('Error adding to cart:', error);
-                // Handle the error gracefully (e.g., display an error message to the user)
-                alert('Error adding to cart. Please try again.');
+                alert('Error adding to cart. Please try again. Check console for details.');
             });
-    }
-
-
-    // Function to update the mini-cart (replace this with your actual function)
-    function updateMiniCart() {
-        console.log('Updating mini-cart...');
-        // Your logic to update the mini-cart goes here
     }
 </script>
 

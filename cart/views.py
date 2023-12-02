@@ -9,41 +9,45 @@ def view_cart(request):
     context = cart_contents(request)
     return render(request, 'cart/cart.html', context)
 
-def add_to_cart(request, item_id):
+def add_to_cart(request, item_id=None):
     """ Add a quantity of the specified product to the cart """
-    product = get_object_or_404(Product, pk=item_id)
-    quantity = int(request.POST.get('quantity'))
-    size = None
+    print("Reached add_to_cart view") 
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        quantity = int(request.POST.get('quantity', 1))  # Convert to int
+        size = None
 
-    # Assuming you have a form element named 'product_size'
-    if 'product_size' in request.POST:
-        size = request.POST['product_size']
+        # Assuming you have a form element named 'product_size'
+        if 'product_size' in request.POST:
+            size = request.POST['product_size']
 
-    cart = request.session.get('cake_cravings_cart', {})
+        product = get_object_or_404(Product, pk=product_id)
+        cart = request.session.get('cake_cravings_cart', {})
 
-    if size:
-        if item_id in cart:
-            if size in cart[item_id]['items_by_size']:
-                cart[item_id]['items_by_size'][size] += quantity
-                messages.success(request, f'Updated size {size.upper()} {product.name} quantity to {cart[item_id]["items_by_size"][size]}')
+        if size:
+            if product_id in cart:
+                if size in cart[product_id]['items_by_size']:
+                    cart[product_id]['items_by_size'][size] += quantity
+                    messages.success(request, f'Updated size {size.upper()} {product.name} quantity to {cart[product_id]["items_by_size"][size]}')
+                else:
+                    cart[product_id]['items_by_size'][size] = quantity
+                    messages.success(request, f'Added size {size.upper()} {product.name} to your cart')
             else:
-                cart[item_id]['items_by_size'][size] = quantity
+                cart[product_id] = {'items_by_size': {size: quantity}}
                 messages.success(request, f'Added size {size.upper()} {product.name} to your cart')
         else:
-            cart[item_id] = {'items_by_size': {size: quantity}}
-            messages.success(request, f'Added size {size.upper()} {product.name} to your cart')
-    else:
-        if item_id in cart:
-            cart[item_id] += quantity
-            messages.success(request, f'Updated {product.name} quantity to {cart[item_id]}')
-        else:
-            cart[item_id] = quantity
-            messages.success(request, f'Added {product.name} to your cart')
+            if product_id in cart:
+                cart[product_id] += quantity
+                messages.success(request, f'Updated {product.name} quantity to {cart[product_id]}')
+            else:
+                cart[product_id] = quantity
+                messages.success(request, f'Added {product.name} to your cart')
 
-    request.session['cake_cravings_cart'] = cart
+        request.session['cake_cravings_cart'] = cart
 
     # Redirect to the cart view after updating the cart
-    return redirect(reverse('view_cart'))
+    return redirect('cart:view_cart')
+
 
 def update_cart(request, item_id):
     """ Update the quantity of the specified product in the cart """
