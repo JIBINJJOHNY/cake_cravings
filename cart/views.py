@@ -48,7 +48,6 @@ def add_to_cart(request, item_id=None):
     # Redirect to the cart view after updating the cart
     return redirect('cart:view_cart')
 
-
 def update_cart(request, item_id):
     """ Update the quantity of the specified product in the cart """
 

@@ -5,17 +5,10 @@ class ReviewForm(forms.ModelForm):
     class Meta:
         model = Review
         fields = ['rating', 'comment']
-        widgets = {
-            'rating': forms.Select(choices=Review.STAR_CHOICES),
-            'comment': forms.Textarea(attrs={'rows': 4}),
-        }
 
-    def __init__(self, *args, **kwargs):
-        super(ReviewForm, self).__init__(*args, **kwargs)
-        self.fields['rating'].label = 'Rating'
-        self.fields['comment'].label = 'Comment'
-
-
-class UpdateReviewForm(forms.Form):
-    rating = forms.IntegerField()
-    comment = forms.CharField()
+    # Add custom validation if needed
+    def clean_rating(self):
+        rating = self.cleaned_data.get('rating')
+        if rating < 1 or rating > 5:
+            raise forms.ValidationError("Rating must be between 1 and 5.")
+        return rating

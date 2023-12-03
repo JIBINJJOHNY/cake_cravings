@@ -6,7 +6,7 @@ from .models import Product, Category
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
-from reviews.forms import ReviewForm,UpdateReviewForm
+from reviews.forms import ReviewForm
 from reviews.models import Review
 
 @require_GET
@@ -72,28 +72,28 @@ def all_products(request, category_slug=None):
         'total_product_count': total_product_count,  
     }
     return render(request, 'products/products.html', context)
+
+
+
 def product_detail(request, product_id):
     product = get_object_or_404(Product, pk=product_id)
-    
-    # Retrieve reviews for the specific product
     reviews = Review.objects.filter(product=product).order_by('-created_at')
 
-    # Create an instance of the ReviewForm
-    review_form = ReviewForm()
-
-    # Create a dictionary to hold instances of UpdateReviewForm for each review
-    update_review_forms = {review.id: UpdateReviewForm(initial={'rating': review.rating, 'comment': review.comment})
-                           for review in reviews}
-
     if request.method == 'POST':
-        # Call the add_to_cart function from the cart app
-        add_to_cart(request, product_id)
+        review_form = ReviewForm(request.POST)
+        if review_form.is_valid():
+            new_review = review_form.save(commit=False)
+            new_review.product = product
+            new_review.user = request.user  # Assuming you have user authentication
+            new_review.save()
+            return redirect('products:product_detail', product_id=product_id)
+    else:
+        review_form = ReviewForm()
 
     context = {
         'product': product,
         'reviews': reviews,
-        'reviewForm': review_form,
-        'updateReviewForms': update_review_forms,
+        'review_form': review_form,
     }
 
     return render(request, 'products/product_detail.html', context)

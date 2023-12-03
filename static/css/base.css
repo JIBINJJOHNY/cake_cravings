@@ -531,3 +531,35 @@ h6 span button:hover {
     margin-right: 10px;
     /* Add spacing between images */
 }
+
+/*REVIEW*/
+.rating i.u-color {
+    color: gold;
+
+}
+
+.text-center {
+    text-align: left !important;
+
+}
+
+.card .review-details .form-group {
+    margin-left: 10px;
+    /* Adjust the value as needed */
+}
+
+/* Add this CSS to your stylesheet or in a <style> tag in the head of your HTML */
+.review-form-container {
+    border: 3px solid #462b48;
+    /* Set your desired border style and color */
+    padding: 15px;
+    /* Add padding for spacing inside the container */
+    margin-top: 20px;
+    /* Add margin to separate from other elements */
+    margin-bottom: 20px;
+}
+
+.btn-review {
+    background-color: #462b48;
+    color: #ffffff;
+}

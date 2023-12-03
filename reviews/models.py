@@ -7,7 +7,7 @@ from orders.models import Order
 class Review(models.Model):
     """Review model."""
     STAR_CHOICES = (
-        ('1', '1'),
+        ('1', '1'),  
         ('2', '2'),
         ('3', '3'),
         ('4', '4'),
